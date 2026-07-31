@@ -1,86 +1,20 @@
-// =========================================================
-// POPUP LAB 6 — ARCADE IFRAME ELEMENT
-// Replace APP_URL after publishing the supplied files.
-// =========================================================
-
 var APP_URL = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
 
-function QueryEncode(value) {
-    var output = Text(value);
-    output = Replace(output, "%", "%25");
-    output = Replace(output, " ", "%20");
-    output = Replace(output, "&", "%26");
-    output = Replace(output, "?", "%3F");
-    output = Replace(output, "#", "%23");
-    output = Replace(output, "=", "%3D");
-    output = Replace(output, "+", "%2B");
-    output = Replace(output, "/", "%2F");
-    output = Replace(output, ":", "%3A");
-    return output;
-}
-
 var oid = Text($feature.OBJECTID);
-var globalId = "";
-
-// Change the field name below if the layer uses another GlobalID field name.
-if (HasKey($feature, "GlobalID")) {
-    globalId = Text($feature.GlobalID);
-}
-
-var layerLabel = "Popup Lab Layer";
-
-var appSource = APP_URL;
-appSource += "?oid=" + QueryEncode(oid);
-appSource += "&globalid=" + QueryEncode(globalId);
-appSource += "&layer=" + QueryEncode(layerLabel);
-appSource += "&source=ArcGIS-Pro";
-appSource += "&build=006";
+var appSource = APP_URL + "?oid=" + oid + "&layer=Popup%20Lab%20Layer&source=ArcGIS-Pro&build=006";
 
 var html = "";
 
-html += "<div style='";
-html += "width:100%;";
-html += "padding:10px;";
-html += "background:#111827;";
-html += "color:white;";
-html += "border-radius:12px;";
-html += "font-family:Arial,sans-serif;";
-html += "'>";
-
-html += "<div style='";
-html += "padding:8px 10px;";
-html += "margin-bottom:8px;";
-html += "background:#0e7490;";
-html += "border-radius:7px;";
-html += "font-weight:bold;";
-html += "letter-spacing:1px;";
-html += "'>";
-html += "POPUP LAB — BUILD 006";
+html += "<div style='width:100%;padding:10px;background:#111827;color:#ffffff;border-radius:12px;font-family:Arial,sans-serif;'>";
+html += "<div style='padding:8px 10px;margin-bottom:8px;background:#0e7490;border-radius:7px;font-weight:bold;letter-spacing:1px;'>";
+html += "POPUP LAB - BUILD 006";
 html += "</div>";
-
-html += "<iframe ";
-html += "src='" + appSource + "' ";
-html += "style='";
-html += "display:block;";
-html += "box-sizing:border-box;";
-html += "width:100%;";
-html += "height:1120px;";
-html += "background:#0f172a;";
-html += "border:3px solid #38bdf8;";
-html += "border-radius:10px;";
-html += "'>";
+html += "<iframe src='" + appSource + "' style='display:block;box-sizing:border-box;width:100%;height:1120px;background:#0f172a;border:3px solid #38bdf8;border-radius:10px;'>";
 html += "Hosted Popup Lab 6 application";
 html += "</iframe>";
-
-html += "<div style='";
-html += "margin-top:8px;";
-html += "font-size:11px;";
-html += "color:#cbd5e1;";
-html += "overflow-wrap:anywhere;";
-html += "'>";
+html += "<div style='margin-top:8px;font-size:11px;color:#cbd5e1;overflow-wrap:anywhere;'>";
 html += "Hosted URL: " + APP_URL;
 html += "</div>";
-
 html += "</div>";
 
 return {
