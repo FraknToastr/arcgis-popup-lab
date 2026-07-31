@@ -1,9 +1,9 @@
-// Popup Lab 7 v1.1 — robust Object ID detection for ArcGIS Pro 3.5.3
+// Popup Lab 7 v1.2 — external-browser PKCE and robust Object ID detection for ArcGIS Pro 3.5.3
 
-var APP_URL = "https://frakntoastr.github.io/arcgis-popup-lab-6/";
-var CLIENT_ID = "2i8ErWnjyQES93El";
+var APP_URL = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
+var CLIENT_ID = "YOUR_CLIENT_ID";
 var PORTAL_URL = "https://www.arcgis.com";
-var SERVICE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/City_Plan_Shape/FeatureServer/0";
+var SERVICE_URL = "https://YOUR-FEATURE-SERVICE/FeatureServer/0";
 
 // Detect the real Object ID field instead of assuming it is named OBJECTID.
 var featureSchema = Schema($feature);
@@ -42,14 +42,14 @@ var queryParameters = {
     portal: PORTAL_URL,
     service: SERVICE_URL,
     source: "ArcGIS-Pro",
-    build: "0071"
+    build: "0072"
 };
 
 var appSource = APP_URL + "?" + UrlEncode(queryParameters);
 
 html += "<div style='width:100%;padding:10px;background:#111827;color:#ffffff;border-radius:12px;font-family:Arial,sans-serif;'>";
 html += "<div style='padding:8px 10px;margin-bottom:8px;background:#15803d;border-radius:7px;font-weight:bold;letter-spacing:1px;'>";
-html += "POPUP LAB — BUILD 007.1";
+html += "POPUP LAB — BUILD 007.2";
 html += "</div>";
 html += "<div style='padding:7px 9px;margin-bottom:8px;background:#1f2937;border-radius:6px;font-size:11px;'>";
 html += "ArcGIS Pro supplied <strong>" + Text(oidField) + " = " + Text(oidValue) + "</strong>";
@@ -58,7 +58,7 @@ html += "<iframe src='" + appSource + "' style='display:block;box-sizing:border-
 html += "Hosted Popup Lab 7 application";
 html += "</iframe>";
 html += "<div style='margin-top:8px;font-size:11px;color:#cbd5e1;overflow-wrap:anywhere;'>";
-html += "OAuth callback: " + APP_URL + "oauth-callback.html";
+html += "OAuth redirect URI: urn:ietf:wg:oauth:2.0:oob";
 html += "</div>";
 html += "</div>";
 
