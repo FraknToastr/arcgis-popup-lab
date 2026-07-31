@@ -1,0 +1,962 @@
+var build = "POPUP LAB — BUILD 003";
+var html = "";
+
+
+// =========================================================
+// STYLE BLOCK
+// =========================================================
+
+html += "<style>";
+
+
+// ---------------------------------------------------------
+// General layout
+// ---------------------------------------------------------
+
+html += ".lab3Root, .lab3Root * {";
+html += "box-sizing:border-box;";
+html += "}";
+
+html += ".labSection {";
+html += "margin-top:18px;";
+html += "}";
+
+html += ".labHeading {";
+html += "margin-bottom:8px;";
+html += "font-size:15px;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".labPanel {";
+html += "padding:12px;";
+html += "background:#1f2937;";
+html += "border:1px solid #475569;";
+html += "border-radius:9px;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// CSS-only tabs
+// ---------------------------------------------------------
+
+html += ".tabRadio {";
+html += "position:absolute;";
+html += "left:-9999px;";
+html += "}";
+
+html += ".tabLabel {";
+html += "display:inline-block;";
+html += "padding:9px 13px;";
+html += "margin:0 4px 8px 0;";
+html += "background:#334155;";
+html += "border:1px solid #64748b;";
+html += "border-radius:7px;";
+html += "cursor:pointer;";
+html += "font-weight:700;";
+html += "transition:all .2s ease;";
+html += "}";
+
+html += ".tabLabel:hover {";
+html += "background:#475569;";
+html += "transform:translateY(-2px);";
+html += "}";
+
+html += ".tabPanel {";
+html += "display:none;";
+html += "padding:14px;";
+html += "min-height:95px;";
+html += "background:#0f172a;";
+html += "border:2px solid #3b82f6;";
+html += "border-radius:9px;";
+html += "}";
+
+html += "#tabOne:checked ~ label[for='tabOne'],";
+html += "#tabTwo:checked ~ label[for='tabTwo'],";
+html += "#tabThree:checked ~ label[for='tabThree'] {";
+html += "background:#2563eb;";
+html += "border-color:#93c5fd;";
+html += "color:#ffffff;";
+html += "}";
+
+html += "#tabOne:checked ~ .tabPanels .panelOne {";
+html += "display:block;";
+html += "}";
+
+html += "#tabTwo:checked ~ .tabPanels .panelTwo {";
+html += "display:block;";
+html += "}";
+
+html += "#tabThree:checked ~ .tabPanels .panelThree {";
+html += "display:block;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// CSS-only switch
+// ---------------------------------------------------------
+
+html += ".switchInput {";
+html += "position:absolute;";
+html += "left:-9999px;";
+html += "}";
+
+html += ".switchLabel {";
+html += "position:relative;";
+html += "display:inline-block;";
+html += "width:60px;";
+html += "height:32px;";
+html += "margin-right:10px;";
+html += "vertical-align:middle;";
+html += "background:#475569;";
+html += "border-radius:20px;";
+html += "cursor:pointer;";
+html += "transition:background .25s ease;";
+html += "}";
+
+html += ".switchLabel:before {";
+html += "content:'';";
+html += "position:absolute;";
+html += "top:4px;";
+html += "left:4px;";
+html += "width:24px;";
+html += "height:24px;";
+html += "background:white;";
+html += "border-radius:50%;";
+html += "transition:transform .25s ease;";
+html += "}";
+
+html += "#colourSwitch:checked + .switchLabel {";
+html += "background:#22c55e;";
+html += "}";
+
+html += "#colourSwitch:checked + .switchLabel:before {";
+html += "transform:translateX(28px);";
+html += "}";
+
+html += ".switchTarget {";
+html += "padding:14px;";
+html += "margin-top:12px;";
+html += "background:#7f1d1d;";
+html += "border-radius:8px;";
+html += "transition:all .35s ease;";
+html += "}";
+
+html += "#colourSwitch:checked ~ .switchTarget {";
+html += "background:#065f46;";
+html += "transform:scale(.97);";
+html += "border-radius:22px;";
+html += "}";
+
+html += ".switchOffText {";
+html += "display:inline;";
+html += "}";
+
+html += ".switchOnText {";
+html += "display:none;";
+html += "}";
+
+html += "#colourSwitch:checked ~ .switchTarget .switchOffText {";
+html += "display:none;";
+html += "}";
+
+html += "#colourSwitch:checked ~ .switchTarget .switchOnText {";
+html += "display:inline;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// CSS-only modal
+// ---------------------------------------------------------
+
+html += ".modalToggle {";
+html += "position:absolute;";
+html += "left:-9999px;";
+html += "}";
+
+html += ".modalOpen {";
+html += "display:inline-block;";
+html += "padding:10px 15px;";
+html += "background:#7c3aed;";
+html += "border-radius:7px;";
+html += "cursor:pointer;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".modalLayer {";
+html += "display:none;";
+html += "position:fixed;";
+html += "inset:0;";
+html += "z-index:999999;";
+html += "align-items:center;";
+html += "justify-content:center;";
+html += "padding:24px;";
+html += "background:rgba(2,6,23,.86);";
+html += "}";
+
+html += "#modalToggle:checked ~ .modalLayer {";
+html += "display:flex;";
+html += "}";
+
+html += ".modalCard {";
+html += "width:min(430px,90%);";
+html += "padding:22px;";
+html += "background:#ffffff;";
+html += "color:#111827;";
+html += "border:4px solid #8b5cf6;";
+html += "border-radius:14px;";
+html += "box-shadow:0 20px 60px rgba(0,0,0,.6);";
+html += "}";
+
+html += ".modalClose {";
+html += "display:inline-block;";
+html += "padding:8px 13px;";
+html += "margin-top:14px;";
+html += "background:#111827;";
+html += "color:white;";
+html += "border-radius:6px;";
+html += "cursor:pointer;";
+html += "font-weight:700;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// Validation and focus
+// ---------------------------------------------------------
+
+html += ".validationInput {";
+html += "display:block;";
+html += "width:100%;";
+html += "padding:9px;";
+html += "margin-top:7px;";
+html += "border:3px solid #64748b;";
+html += "border-radius:7px;";
+html += "outline:none;";
+html += "transition:all .2s ease;";
+html += "}";
+
+html += ".validationInput:focus {";
+html += "border-color:#f59e0b;";
+html += "box-shadow:0 0 0 4px rgba(245,158,11,.25);";
+html += "transform:scale(1.01);";
+html += "}";
+
+html += ".validationInput:valid {";
+html += "border-color:#22c55e;";
+html += "background:#dcfce7;";
+html += "}";
+
+html += ".validationInput:invalid {";
+html += "border-color:#ef4444;";
+html += "background:#fee2e2;";
+html += "}";
+
+html += ".validationResult {";
+html += "margin-top:8px;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".validMessage {";
+html += "display:none;";
+html += "color:#86efac;";
+html += "}";
+
+html += ".invalidMessage {";
+html += "display:block;";
+html += "color:#fca5a5;";
+html += "}";
+
+html += ".validationInput:valid ~ .validationResult .validMessage {";
+html += "display:block;";
+html += "}";
+
+html += ".validationInput:valid ~ .validationResult .invalidMessage {";
+html += "display:none;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// Tooltip
+// ---------------------------------------------------------
+
+html += ".tooltipHost {";
+html += "position:relative;";
+html += "display:inline-block;";
+html += "padding:9px 13px;";
+html += "background:#0369a1;";
+html += "border-radius:7px;";
+html += "cursor:help;";
+html += "}";
+
+html += ".tooltipHost:after {";
+html += "content:'CSS-generated tooltip content';";
+html += "position:absolute;";
+html += "left:0;";
+html += "bottom:calc(100% + 10px);";
+html += "width:210px;";
+html += "padding:9px;";
+html += "background:#020617;";
+html += "color:white;";
+html += "border:1px solid #38bdf8;";
+html += "border-radius:6px;";
+html += "opacity:0;";
+html += "pointer-events:none;";
+html += "transform:translateY(8px);";
+html += "transition:all .2s ease;";
+html += "}";
+
+html += ".tooltipHost:hover:after {";
+html += "opacity:1;";
+html += "transform:translateY(0);";
+html += "}";
+
+
+// ---------------------------------------------------------
+// CSS counters
+// ---------------------------------------------------------
+
+html += ".counterList {";
+html += "counter-reset:labCounter;";
+html += "padding:0;";
+html += "margin:0;";
+html += "list-style:none;";
+html += "}";
+
+html += ".counterList li {";
+html += "counter-increment:labCounter;";
+html += "position:relative;";
+html += "padding:8px 8px 8px 42px;";
+html += "margin-bottom:6px;";
+html += "background:#334155;";
+html += "border-radius:6px;";
+html += "}";
+
+html += ".counterList li:before {";
+html += "content:counter(labCounter);";
+html += "position:absolute;";
+html += "left:8px;";
+html += "top:6px;";
+html += "width:25px;";
+html += "height:25px;";
+html += "line-height:25px;";
+html += "text-align:center;";
+html += "background:#f59e0b;";
+html += "color:#111827;";
+html += "border-radius:50%;";
+html += "font-weight:700;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// Scroll and sticky positioning
+// ---------------------------------------------------------
+
+html += ".scrollLab {";
+html += "height:180px;";
+html += "overflow:auto;";
+html += "background:#e2e8f0;";
+html += "color:#111827;";
+html += "border:3px solid #0ea5e9;";
+html += "border-radius:8px;";
+html += "}";
+
+html += ".stickyHeader {";
+html += "position:sticky;";
+html += "top:0;";
+html += "z-index:4;";
+html += "padding:10px;";
+html += "background:#0284c7;";
+html += "color:white;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".scrollRow {";
+html += "padding:10px;";
+html += "border-bottom:1px solid #94a3b8;";
+html += "}";
+
+
+// ---------------------------------------------------------
+// Advanced sizing and graphical CSS
+// ---------------------------------------------------------
+
+html += ".advancedGrid {";
+html += "display:grid;";
+html += "grid-template-columns:repeat(auto-fit,minmax(115px,1fr));";
+html += "gap:8px;";
+html += "}";
+
+html += ".advancedCard {";
+html += "min-height:90px;";
+html += "padding:10px;";
+html += "display:flex;";
+html += "align-items:center;";
+html += "justify-content:center;";
+html += "text-align:center;";
+html += "border-radius:9px;";
+html += "font-size:clamp(11px,2.5vw,18px);";
+html += "font-weight:700;";
+html += "}";
+
+html += ".conicCard {";
+html += "background:conic-gradient(from 45deg,#22c55e,#3b82f6,#a855f7,#f97316,#22c55e);";
+html += "}";
+
+html += ".aspectCard {";
+html += "aspect-ratio:16 / 7;";
+html += "background:linear-gradient(135deg,#be123c,#fb7185);";
+html += "}";
+
+html += ".calcCard {";
+html += "width:calc(100% - 12px);";
+html += "background:radial-gradient(circle at top left,#fde047,#f97316 70%);";
+html += "color:#111827;";
+html += "}";
+
+html += ".variableCard {";
+html += "--cardHue:#14b8a6;";
+html += "background:var(--cardHue);";
+html += "box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--cardHue),white 35%);";
+html += "}";
+
+
+// ---------------------------------------------------------
+// Target navigation
+// ---------------------------------------------------------
+
+html += ".targetBox {";
+html += "padding:12px;";
+html += "background:#334155;";
+html += "border:2px solid transparent;";
+html += "border-radius:8px;";
+html += "transition:all .3s ease;";
+html += "}";
+
+html += ".targetBox:target {";
+html += "background:#713f12;";
+html += "border-color:#fbbf24;";
+html += "transform:scale(1.03);";
+html += "}";
+
+
+// ---------------------------------------------------------
+// Reduced motion media query
+// ---------------------------------------------------------
+
+html += ".motionTest {";
+html += "padding:12px;";
+html += "background:#be123c;";
+html += "border-radius:8px;";
+html += "text-align:center;";
+html += "font-weight:700;";
+html += "animation:motionSlide 1s ease-in-out infinite alternate;";
+html += "}";
+
+html += "@keyframes motionSlide {";
+html += "from { transform:translateX(0); }";
+html += "to { transform:translateX(20px); }";
+html += "}";
+
+html += "@media (prefers-reduced-motion:reduce) {";
+html += ".motionTest {";
+html += "animation:none;";
+html += "background:#475569;";
+html += "}";
+
+html += "}";
+
+html += "</style>";
+
+
+// =========================================================
+// ROOT
+// =========================================================
+
+html += "<div class='lab3Root' style='";
+html += "width:100%;";
+html += "padding:14px;";
+html += "background:#111827;";
+html += "color:#ffffff;";
+html += "border-radius:14px;";
+html += "font-family:Arial,sans-serif;";
+html += "'>";
+
+
+// =========================================================
+// BUILD MARKER
+// =========================================================
+
+html += "<div style='";
+html += "padding:9px 11px;";
+html += "margin-bottom:13px;";
+html += "background:#16a34a;";
+html += "border-radius:7px;";
+html += "font-weight:700;";
+html += "letter-spacing:1px;";
+html += "'>";
+
+html += build;
+
+html += "</div>";
+
+html += "<div style='font-size:25px;font-weight:700;'>";
+
+html += "CSS-only mini-application test";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:4px;";
+html += "color:#7dd3fc;";
+html += "font-size:12px;";
+html += "'>";
+
+html += "Selectors, state, modal behaviour, validation, scrolling and iframe alternatives";
+
+html += "</div>";
+
+
+// =========================================================
+// 1. CSS-ONLY TABS
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>1. CSS-only tabs</div>";
+
+html += "<div class='labPanel'>";
+
+html += "<input class='tabRadio' ";
+html += "type='radio' ";
+html += "name='labTabs' ";
+html += "id='tabOne' ";
+html += "checked>";
+
+html += "<input class='tabRadio' ";
+html += "type='radio' ";
+html += "name='labTabs' ";
+html += "id='tabTwo'>";
+
+html += "<input class='tabRadio' ";
+html += "type='radio' ";
+html += "name='labTabs' ";
+html += "id='tabThree'>";
+
+html += "<label class='tabLabel' for='tabOne'>Overview</label>";
+html += "<label class='tabLabel' for='tabTwo'>Metrics</label>";
+html += "<label class='tabLabel' for='tabThree'>Notes</label>";
+
+html += "<div class='tabPanels'>";
+
+html += "<div class='tabPanel panelOne'>";
+
+html += "<strong>Overview panel</strong><br>";
+html += "Selecting another label should replace this content without JavaScript.";
+
+html += "</div>";
+
+html += "<div class='tabPanel panelTwo'>";
+
+html += "<strong>Metrics panel</strong><br><br>";
+
+html += "<div style='";
+html += "height:18px;";
+html += "background:#334155;";
+html += "border-radius:9px;";
+html += "overflow:hidden;";
+html += "'>";
+
+html += "<div style='";
+html += "width:74%;";
+html += "height:100%;";
+html += "background:linear-gradient(90deg,#06b6d4,#22c55e);";
+html += "'></div>";
+
+html += "</div>";
+
+html += "<div style='margin-top:7px;'>74% demonstration value</div>";
+
+html += "</div>";
+
+html += "<div class='tabPanel panelThree'>";
+
+html += "<strong>Notes panel</strong>";
+
+html += "<ul style='margin-bottom:0;'>";
+html += "<li>Radio state controls visibility.</li>";
+html += "<li>Labels act as tab controls.</li>";
+html += "<li>No script is involved.</li>";
+html += "</ul>";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 2. CHECKBOX STATE SWITCH
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>2. Checkbox-controlled application state</div>";
+
+html += "<div class='labPanel'>";
+
+html += "<input ";
+html += "class='switchInput' ";
+html += "type='checkbox' ";
+html += "id='colourSwitch'>";
+
+html += "<label ";
+html += "class='switchLabel' ";
+html += "for='colourSwitch'>";
+html += "</label>";
+
+html += "<strong>Change card state</strong>";
+
+html += "<div class='switchTarget'>";
+
+html += "<span class='switchOffText'>";
+html += "Switch is OFF — red state";
+html += "</span>";
+
+html += "<span class='switchOnText'>";
+html += "Switch is ON — green state";
+html += "</span>";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 3. CSS-ONLY MODAL
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>3. CSS-only modal and fixed positioning</div>";
+
+html += "<div class='labPanel'>";
+
+html += "<input ";
+html += "class='modalToggle' ";
+html += "type='checkbox' ";
+html += "id='modalToggle'>";
+
+html += "<label ";
+html += "class='modalOpen' ";
+html += "for='modalToggle'>";
+
+html += "Open modal";
+
+html += "</label>";
+
+html += "<div class='modalLayer'>";
+
+html += "<div class='modalCard'>";
+
+html += "<div style='font-size:23px;font-weight:700;'>";
+
+html += "CSS modal worked";
+
+html += "</div>";
+
+html += "<div style='margin-top:8px;line-height:1.5;'>";
+
+html += "This overlay is controlled by a hidden checkbox and a label. ";
+html += "It also tests fixed positioning, z-index and viewport-relative layout.";
+
+html += "</div>";
+
+html += "<label ";
+html += "class='modalClose' ";
+html += "for='modalToggle'>";
+
+html += "Close modal";
+
+html += "</label>";
+
+html += "</div>";
+html += "</div>";
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 4. VALIDATION AND FOCUS SELECTORS
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>4. Focus, valid and invalid selectors</div>";
+
+html += "<div class='labPanel'>";
+
+html += "<label for='emailTest'>Enter a valid email address</label>";
+
+html += "<input ";
+html += "class='validationInput' ";
+html += "id='emailTest' ";
+html += "type='email' ";
+html += "required ";
+html += "value='not-an-email'>";
+
+html += "<div class='validationResult'>";
+
+html += "<span class='invalidMessage'>Invalid email state detected</span>";
+html += "<span class='validMessage'>Valid email state detected</span>";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 5. PSEUDO-ELEMENT TOOLTIP
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>5. Generated content and tooltip</div>";
+
+html += "<div class='labPanel' style='padding-top:42px;'>";
+
+html += "<span class='tooltipHost'>Hover for tooltip</span>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 6. CSS COUNTERS
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>6. CSS counters and generated numbering</div>";
+
+html += "<div class='labPanel'>";
+
+html += "<ol class='counterList'>";
+
+html += "<li>First generated counter item</li>";
+html += "<li>Second generated counter item</li>";
+html += "<li>Third generated counter item</li>";
+html += "<li>Fourth generated counter item</li>";
+
+html += "</ol>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 7. SCROLLING AND STICKY POSITIONING
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>7. Overflow scrolling and sticky header</div>";
+
+html += "<div class='scrollLab'>";
+
+html += "<div class='stickyHeader'>";
+html += "This header should remain visible while scrolling";
+html += "</div>";
+
+html += "<div class='scrollRow'>Scrollable record 1</div>";
+html += "<div class='scrollRow'>Scrollable record 2</div>";
+html += "<div class='scrollRow'>Scrollable record 3</div>";
+html += "<div class='scrollRow'>Scrollable record 4</div>";
+html += "<div class='scrollRow'>Scrollable record 5</div>";
+html += "<div class='scrollRow'>Scrollable record 6</div>";
+html += "<div class='scrollRow'>Scrollable record 7</div>";
+html += "<div class='scrollRow'>Scrollable record 8</div>";
+html += "<div class='scrollRow'>Scrollable record 9</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 8. ADVANCED CSS VALUES
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>8. Advanced CSS sizing and graphics</div>";
+
+html += "<div class='advancedGrid'>";
+
+html += "<div class='advancedCard conicCard'>";
+html += "Conic gradient";
+html += "</div>";
+
+html += "<div class='advancedCard aspectCard'>";
+html += "Aspect ratio";
+html += "</div>";
+
+html += "<div class='advancedCard calcCard'>";
+html += "calc() width";
+html += "</div>";
+
+html += "<div class='advancedCard variableCard'>";
+html += "CSS variable<br>and color-mix()";
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 9. INTERNAL TARGET NAVIGATION
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>9. Internal links and :target state</div>";
+
+html += "<div class='labPanel'>";
+
+html += "<a ";
+html += "href='#lab3Target' ";
+html += "style='";
+html += "display:inline-block;";
+html += "padding:8px 12px;";
+html += "margin-bottom:10px;";
+html += "background:#2563eb;";
+html += "color:white;";
+html += "border-radius:6px;";
+html += "text-decoration:none;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "Activate target state";
+
+html += "</a>";
+
+html += "<div id='lab3Target' class='targetBox'>";
+
+html += "This panel should turn amber and enlarge slightly when targeted.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 10. DATA-URI IFRAME
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>10. Data-URI iframe alternative</div>";
+
+html += "<iframe ";
+
+html += "src='data:text/html,%3Chtml%3E%3Cbody%20style%3D%22margin%3A0%3Bpadding%3A20px%3Bbackground%3Alinear-gradient(135deg%2C%23065f46%2C%230ea5e9)%3Bcolor%3Awhite%3Bfont-family%3AArial%3Btext-align%3Acenter%3B%22%3E%3Ch2%3EDATA-URI%20IFRAME%20WORKED%3C%2Fh2%3E%3Cp%3EThis%20document%20was%20loaded%20from%20the%20iframe%20src%20attribute.%3C%2Fp%3E%3C%2Fbody%3E%3C%2Fhtml%3E' ";
+
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:145px;";
+html += "background:#e5e7eb;";
+html += "border:3px solid #14b8a6;";
+html += "border-radius:9px;";
+html += "'>";
+
+html += "Data iframe fallback text";
+
+html += "</iframe>";
+
+html += "</div>";
+
+
+// =========================================================
+// 11. OPENSTREETMAP EMBED
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>11. Externally hosted iframe designed for embedding</div>";
+
+html += "<iframe ";
+
+html += "src='https://www.openstreetmap.org/export/embed.html?bbox=138.575%2C-34.945%2C138.625%2C-34.895&amp;layer=mapnik&amp;marker=-34.9285%2C138.6007' ";
+
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:260px;";
+html += "background:#e5e7eb;";
+html += "border:3px solid #38bdf8;";
+html += "border-radius:9px;";
+html += "'>";
+
+html += "External iframe fallback text";
+
+html += "</iframe>";
+
+html += "</div>";
+
+
+// =========================================================
+// 12. MOTION PREFERENCE
+// =========================================================
+
+html += "<div class='labSection'>";
+
+html += "<div class='labHeading'>12. Animation and reduced-motion media query</div>";
+
+html += "<div style='overflow:hidden;padding:5px;'>";
+
+html += "<div class='motionTest'>";
+
+html += "This panel moves unless reduced motion is active";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// RESULT SUMMARY
+// =========================================================
+
+html += "<div style='";
+html += "margin-top:18px;";
+html += "padding:11px;";
+html += "background:#020617;";
+html += "border:1px solid #334155;";
+html += "border-radius:8px;";
+html += "font-size:11px;";
+html += "line-height:1.5;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "<strong style='color:white;'>Check:</strong> ";
+html += "tabs, switch state, modal overlay, validation colours, tooltip, ";
+html += "counter numbering, sticky scrolling, advanced gradients, target state, ";
+html += "data-URI iframe, external map and reduced-motion behaviour.";
+
+html += "</div>";
+
+
+html += "</div>";
+
+
+// =========================================================
+// RETURN POPUP ELEMENT
+// =========================================================
+
+return {
+    type: "text",
+    text: html
+};

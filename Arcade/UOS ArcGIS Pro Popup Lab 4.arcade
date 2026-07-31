@@ -1,0 +1,1104 @@
+// =========================================================
+// POPUP LAB 4
+// Performance, scale, resizing and state persistence
+// =========================================================
+
+var build = "POPUP LAB — BUILD 004";
+
+
+// ---------------------------------------------------------
+// STRESS CONFIGURATION
+// ---------------------------------------------------------
+
+var rowCount = 300;
+var cardCount = 120;
+var selectorCount = 160;
+var animationCount = 48;
+var nestingDepth = 32;
+
+var smallSvgShapes = 30;
+var mediumSvgShapes = 120;
+var largeSvgShapes = 260;
+
+
+// ---------------------------------------------------------
+// START APPROXIMATE ARCADE TIMER
+// ---------------------------------------------------------
+
+var buildStarted = Now();
+
+
+// =========================================================
+// DATA-URI SVG GENERATOR
+// =========================================================
+
+function BuildSvgUri(shapeCount) {
+
+    var colours = [
+        "%230ea5e9",
+        "%238b5cf6",
+        "%2322c55e",
+        "%23f59e0b",
+        "%23ef4444",
+        "%23ec4899"
+    ];
+
+    var uri = "";
+
+    uri += "data:image/svg+xml,";
+    uri += "%3Csvg%20xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22";
+    uri += "%20viewBox=%220%200%20520%20180%22%3E";
+
+    uri += "%3Cdefs%3E";
+    uri += "%3ClinearGradient%20id=%22bg%22%20x1=%220%22%20x2=%221%22%3E";
+    uri += "%3Cstop%20stop-color=%22%230f172a%22%2F%3E";
+    uri += "%3Cstop%20offset=%221%22%20stop-color=%22%231e293b%22%2F%3E";
+    uri += "%3C%2FlinearGradient%3E";
+    uri += "%3C%2Fdefs%3E";
+
+    uri += "%3Crect%20width=%22520%22%20height=%22180%22";
+    uri += "%20rx=%2218%22%20fill=%22url(%23bg)%22%2F%3E";
+
+    for (var i = 0; i < shapeCount; i++) {
+
+        var cx = 12 + ((i * 37) % 496);
+        var cy = 12 + ((i * 53) % 156);
+        var radius = 2 + (i % 8);
+        var colour = colours[i % Count(colours)];
+        var opacity = 35 + ((i * 11) % 65);
+
+        uri += "%3Ccircle";
+        uri += "%20cx=%22" + Text(cx) + "%22";
+        uri += "%20cy=%22" + Text(cy) + "%22";
+        uri += "%20r=%22" + Text(radius) + "%22";
+        uri += "%20fill=%22" + colour + "%22";
+        uri += "%20fill-opacity=%220." + Text(opacity) + "%22";
+        uri += "%2F%3E";
+    }
+
+    uri += "%3Ctext";
+    uri += "%20x=%2220%22";
+    uri += "%20y=%22160%22";
+    uri += "%20font-family=%22Arial%22";
+    uri += "%20font-size=%2218%22";
+    uri += "%20font-weight=%22700%22";
+    uri += "%20fill=%22white%22%3E";
+
+    uri += Text(shapeCount) + "%20GENERATED%20SVG%20SHAPES";
+
+    uri += "%3C%2Ftext%3E";
+    uri += "%3C%2Fsvg%3E";
+
+    return uri;
+}
+
+
+var smallSvg = BuildSvgUri(smallSvgShapes);
+var mediumSvg = BuildSvgUri(mediumSvgShapes);
+var largeSvg = BuildSvgUri(largeSvgShapes);
+
+
+// =========================================================
+// CSS CONSTRUCTION
+// =========================================================
+
+var css = "";
+
+css += "<style>";
+
+css += ".lab4Root,.lab4Root *{box-sizing:border-box;}";
+css += ".lab4Root{container-type:inline-size;}";
+
+css += ".lab4Section{";
+css += "margin-top:20px;";
+css += "}";
+
+css += ".lab4Heading{";
+css += "margin-bottom:8px;";
+css += "font-size:16px;";
+css += "font-weight:700;";
+css += "}";
+
+css += ".lab4Panel{";
+css += "padding:12px;";
+css += "background:#1f2937;";
+css += "border:1px solid #475569;";
+css += "border-radius:9px;";
+css += "}";
+
+
+// ---------------------------------------------------------
+// Responsive and DPI tests
+// ---------------------------------------------------------
+
+css += ".viewportBadge{";
+css += "display:none;";
+css += "padding:7px 10px;";
+css += "border-radius:6px;";
+css += "font-weight:700;";
+css += "}";
+
+css += "@media(max-width:449px){";
+css += ".viewportSmall{display:inline-block;background:#be123c;}";
+css += "}";
+
+css += "@media(min-width:450px) and (max-width:699px){";
+css += ".viewportMedium{display:inline-block;background:#d97706;}";
+css += "}";
+
+css += "@media(min-width:700px){";
+css += ".viewportLarge{display:inline-block;background:#15803d;}";
+css += "}";
+
+css += ".dpiBadge{";
+css += "display:inline-block;";
+css += "padding:7px 10px;";
+css += "margin-top:8px;";
+css += "background:#475569;";
+css += "border-radius:6px;";
+css += "font-weight:700;";
+css += "}";
+
+css += "@media(min-resolution:1.5dppx){";
+css += ".dpiBadge{background:#7c3aed;}";
+css += ".dpiBadge:after{content:' — HIGH DPI QUERY ACTIVE';}";
+css += "}";
+
+
+// ---------------------------------------------------------
+// State-persistence controls
+// ---------------------------------------------------------
+
+css += ".stateInput{";
+css += "display:block;";
+css += "width:100%;";
+css += "padding:8px;";
+css += "margin-top:7px;";
+css += "border:2px solid #60a5fa;";
+css += "border-radius:6px;";
+css += "}";
+
+css += ".stateGrid{";
+css += "display:grid;";
+css += "grid-template-columns:repeat(2,minmax(0,1fr));";
+css += "gap:8px;";
+css += "}";
+
+css += ".stateScroll{";
+css += "height:120px;";
+css += "overflow:auto;";
+css += "margin-top:10px;";
+css += "background:#e2e8f0;";
+css += "color:#111827;";
+css += "border-radius:7px;";
+css += "}";
+
+css += ".stateScroll div{";
+css += "padding:9px;";
+css += "border-bottom:1px solid #94a3b8;";
+css += "}";
+
+css += ".editableRegion{";
+css += "min-height:60px;";
+css += "padding:10px;";
+css += "margin-top:8px;";
+css += "background:#ffffff;";
+css += "color:#111827;";
+css += "border:3px dashed #f59e0b;";
+css += "border-radius:7px;";
+css += "}";
+
+
+// ---------------------------------------------------------
+// Large table
+// ---------------------------------------------------------
+
+css += ".tableViewport{";
+css += "height:350px;";
+css += "overflow:auto;";
+css += "border:2px solid #38bdf8;";
+css += "border-radius:8px;";
+css += "background:#ffffff;";
+css += "}";
+
+css += ".stressTable{";
+css += "width:100%;";
+css += "border-collapse:collapse;";
+css += "color:#111827;";
+css += "font-size:12px;";
+css += "}";
+
+css += ".stressTable th{";
+css += "position:sticky;";
+css += "top:0;";
+css += "z-index:4;";
+css += "padding:8px;";
+css += "background:#0369a1;";
+css += "color:white;";
+css += "border:1px solid #075985;";
+css += "text-align:left;";
+css += "}";
+
+css += ".stressTable td{";
+css += "padding:6px 8px;";
+css += "border:1px solid #cbd5e1;";
+css += "}";
+
+css += ".stressTable tr:nth-child(even){";
+css += "background:#f1f5f9;";
+css += "}";
+
+css += ".rowBar{";
+css += "height:9px;";
+css += "background:linear-gradient(90deg,#06b6d4,#8b5cf6);";
+css += "border-radius:5px;";
+css += "}";
+
+
+// ---------------------------------------------------------
+// Card wall
+// ---------------------------------------------------------
+
+css += ".cardWall{";
+css += "display:grid;";
+css += "grid-template-columns:repeat(auto-fit,minmax(90px,1fr));";
+css += "gap:7px;";
+css += "height:390px;";
+css += "overflow:auto;";
+css += "padding:8px;";
+css += "background:#020617;";
+css += "border:2px solid #8b5cf6;";
+css += "border-radius:9px;";
+css += "}";
+
+css += ".stressCard{";
+css += "min-height:72px;";
+css += "display:flex;";
+css += "align-items:center;";
+css += "justify-content:center;";
+css += "padding:7px;";
+css += "border-radius:8px;";
+css += "text-align:center;";
+css += "font-weight:700;";
+css += "transition:all .18s ease;";
+css += "}";
+
+
+// Generate a large number of unique selectors.
+
+for (var selectorIndex = 1; selectorIndex <= selectorCount; selectorIndex++) {
+
+    var moveX = (selectorIndex % 7) - 3;
+    var moveY = (selectorIndex % 5) - 2;
+    var rotateValue = (selectorIndex % 9) - 4;
+
+    css += ".stressCard" + Text(selectorIndex) + ":hover{";
+
+    css += "transform:";
+    css += "translate(" + Text(moveX) + "px," + Text(moveY) + "px)";
+    css += " rotate(" + Text(rotateValue) + "deg)";
+    css += " scale(1.08);";
+
+    css += "filter:brightness(1.25);";
+    css += "box-shadow:0 8px 20px rgba(0,0,0,.5);";
+
+    css += "}";
+}
+
+
+// ---------------------------------------------------------
+// Animation wall
+// ---------------------------------------------------------
+
+css += "@keyframes lab4Pulse{";
+css += "0%{transform:scale(.75) rotate(-4deg);opacity:.35;}";
+css += "50%{transform:scale(1.04) rotate(2deg);opacity:1;}";
+css += "100%{transform:scale(.82) rotate(5deg);opacity:.5;}";
+css += "}";
+
+css += ".animationWall{";
+css += "display:grid;";
+css += "grid-template-columns:repeat(auto-fit,minmax(42px,1fr));";
+css += "gap:6px;";
+css += "padding:10px;";
+css += "background:#020617;";
+css += "border:2px solid #ec4899;";
+css += "border-radius:9px;";
+css += "}";
+
+css += ".animationTile{";
+css += "aspect-ratio:1;";
+css += "border-radius:8px;";
+css += "animation-name:lab4Pulse;";
+css += "animation-duration:1.5s;";
+css += "animation-iteration-count:infinite;";
+css += "animation-direction:alternate;";
+css += "animation-timing-function:ease-in-out;";
+css += "}";
+
+
+// ---------------------------------------------------------
+// Data image tests
+// ---------------------------------------------------------
+
+css += ".dataImage{";
+css += "display:block;";
+css += "width:100%;";
+css += "min-height:100px;";
+css += "margin-top:8px;";
+css += "background:#e2e8f0;";
+css += "border:2px solid #14b8a6;";
+css += "border-radius:9px;";
+css += "}";
+
+
+// ---------------------------------------------------------
+// Nested DOM
+// ---------------------------------------------------------
+
+css += ".nestViewport{";
+css += "height:240px;";
+css += "overflow:auto;";
+css += "padding:8px;";
+css += "background:#020617;";
+css += "border:2px solid #f59e0b;";
+css += "border-radius:9px;";
+css += "}";
+
+css += ".nestLayer{";
+css += "padding:5px;";
+css += "border:1px solid rgba(255,255,255,.22);";
+css += "border-radius:5px;";
+css += "background:rgba(59,130,246,.025);";
+css += "}";
+
+
+// ---------------------------------------------------------
+// One-pixel and scaling test
+// ---------------------------------------------------------
+
+css += ".pixelGrid{";
+css += "height:100px;";
+css += "background-image:";
+css += "linear-gradient(90deg,rgba(255,255,255,.28) 1px,transparent 1px),";
+css += "linear-gradient(rgba(255,255,255,.28) 1px,transparent 1px);";
+css += "background-size:10px 10px;";
+css += "background-color:#0f172a;";
+css += "border:1px solid #ffffff;";
+css += "}";
+
+css += ".thinLines{";
+css += "display:grid;";
+css += "grid-template-columns:repeat(4,1fr);";
+css += "gap:8px;";
+css += "margin-top:10px;";
+css += "}";
+
+css += ".thinLine1{border-top:1px solid white;}";
+css += ".thinLine2{border-top:2px solid white;}";
+css += ".thinLine3{border-top:3px solid white;}";
+css += ".thinLine4{border-top:4px solid white;}";
+
+css += "</style>";
+
+
+// =========================================================
+// HTML CONSTRUCTION
+// =========================================================
+
+var html = css;
+
+html += "<div class='lab4Root' style='";
+html += "width:100%;";
+html += "padding:14px;";
+html += "background:#111827;";
+html += "color:#ffffff;";
+html += "border-radius:14px;";
+html += "font-family:Arial,sans-serif;";
+html += "'>";
+
+
+// ---------------------------------------------------------
+// Header
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "padding:9px 11px;";
+html += "margin-bottom:13px;";
+html += "background:#0891b2;";
+html += "border-radius:7px;";
+html += "font-weight:700;";
+html += "letter-spacing:1px;";
+html += "'>";
+
+html += build;
+
+html += "</div>";
+
+html += "<div style='font-size:26px;font-weight:700;'>";
+
+html += "Performance and persistence laboratory";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:4px;";
+html += "color:#7dd3fc;";
+html += "font-size:12px;";
+html += "'>";
+
+html += "Large DOM output, selector load, image payloads, resizing and retained state";
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Test configuration summary
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>1. Active stress configuration</div>";
+
+html += "<div class='lab4Panel'>";
+
+html += "<table style='width:100%;border-collapse:collapse;'>";
+
+html += "<tr>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;'>Generated rows</td>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;text-align:right;'>";
+html += Text(rowCount);
+html += "</td>";
+html += "</tr>";
+
+html += "<tr>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;'>Generated cards</td>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;text-align:right;'>";
+html += Text(cardCount);
+html += "</td>";
+html += "</tr>";
+
+html += "<tr>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;'>Unique CSS selectors</td>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;text-align:right;'>";
+html += Text(selectorCount);
+html += "</td>";
+html += "</tr>";
+
+html += "<tr>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;'>Animated elements</td>";
+html += "<td style='padding:5px;border-bottom:1px solid #475569;text-align:right;'>";
+html += Text(animationCount);
+html += "</td>";
+html += "</tr>";
+
+html += "<tr>";
+html += "<td style='padding:5px;'>Nested DOM depth</td>";
+html += "<td style='padding:5px;text-align:right;'>";
+html += Text(nestingDepth);
+html += "</td>";
+html += "</tr>";
+
+html += "</table>";
+
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Responsive viewport and DPI
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>2. Popup width and display scaling</div>";
+
+html += "<div class='lab4Panel'>";
+
+html += "<span class='viewportBadge viewportSmall'>";
+html += "SMALL VIEWPORT — under 450 px";
+html += "</span>";
+
+html += "<span class='viewportBadge viewportMedium'>";
+html += "MEDIUM VIEWPORT — 450 to 699 px";
+html += "</span>";
+
+html += "<span class='viewportBadge viewportLarge'>";
+html += "LARGE VIEWPORT — 700 px or wider";
+html += "</span>";
+
+html += "<br>";
+
+html += "<span class='dpiBadge'>";
+html += "DISPLAY RESOLUTION TEST";
+html += "</span>";
+
+html += "<div style='margin-top:10px;font-size:12px;color:#cbd5e1;'>";
+
+html += "Resize, dock and float the popup. The viewport badge should update.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Persistence controls
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>3. Form and interface-state persistence</div>";
+
+html += "<div class='lab4Panel'>";
+
+html += "<div style='";
+html += "padding:8px;";
+html += "margin-bottom:10px;";
+html += "background:#334155;";
+html += "border-radius:7px;";
+html += "font-size:12px;";
+html += "'>";
+
+html += "Current feature OBJECTID: ";
+html += "<strong>" + Text($feature.OBJECTID) + "</strong>";
+
+html += "</div>";
+
+html += "<div class='stateGrid'>";
+
+html += "<input ";
+html += "class='stateInput' ";
+html += "type='text' ";
+html += "value='CHANGE THIS TEXT' ";
+html += "autocomplete='off'>";
+
+html += "<input ";
+html += "class='stateInput' ";
+html += "type='number' ";
+html += "value='12345'>";
+
+html += "<input ";
+html += "type='color' ";
+html += "value='#22c55e' ";
+html += "style='width:100%;height:38px;margin-top:7px;'>";
+
+html += "<select class='stateInput'>";
+
+html += "<option>Option A</option>";
+html += "<option>Option B</option>";
+html += "<option>Option C</option>";
+html += "<option>Option D</option>";
+
+html += "</select>";
+
+html += "</div>";
+
+html += "<div style='margin-top:12px;'>";
+
+html += "<input type='checkbox' id='persistCheckbox'> ";
+html += "<label for='persistCheckbox'>Change this checkbox</label>";
+
+html += "&nbsp;&nbsp;";
+
+html += "<input type='radio' name='persistRadio' id='persistA' checked> ";
+html += "<label for='persistA'>Radio A</label>";
+
+html += "&nbsp;&nbsp;";
+
+html += "<input type='radio' name='persistRadio' id='persistB'> ";
+html += "<label for='persistB'>Radio B</label>";
+
+html += "</div>";
+
+html += "<div style='margin-top:12px;'>";
+
+html += "Range state: ";
+
+html += "<input ";
+html += "type='range' ";
+html += "min='0' ";
+html += "max='100' ";
+html += "value='25' ";
+html += "style='width:70%;'>";
+
+html += "</div>";
+
+html += "<details style='";
+html += "margin-top:12px;";
+html += "padding:9px;";
+html += "background:#312e81;";
+html += "border-radius:7px;";
+html += "'>";
+
+html += "<summary style='cursor:pointer;font-weight:700;'>";
+
+html += "Expand this disclosure";
+
+html += "</summary>";
+
+html += "<div style='padding-top:9px;'>";
+
+html += "Leave this section expanded before closing the popup.";
+
+html += "</div>";
+
+html += "</details>";
+
+html += "<div ";
+html += "class='editableRegion' ";
+html += "contenteditable='true'>";
+
+html += "Try editing this contenteditable region.";
+
+html += "</div>";
+
+html += "<div class='stateScroll'>";
+
+for (var stateRow = 1; stateRow <= 15; stateRow++) {
+
+    html += "<div>";
+    html += "Persistence scroll marker " + Text(stateRow);
+    html += "</div>";
+}
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:10px;";
+html += "padding:9px;";
+html += "background:#020617;";
+html += "border-radius:6px;";
+html += "font-size:11px;";
+html += "line-height:1.5;";
+html += "'>";
+
+html += "Change every control, edit both text regions, expand Details and scroll ";
+html += "the internal list to marker 10. Then test closing and reopening the popup, ";
+html += "selecting another feature, returning to this feature, toggling the layer ";
+html += "and reopening the project.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Large generated table
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>";
+html += "4. Generated table — " + Text(rowCount) + " rows";
+html += "</div>";
+
+html += "<div class='tableViewport'>";
+
+html += "<table class='stressTable'>";
+
+html += "<thead>";
+html += "<tr>";
+html += "<th>Row</th>";
+html += "<th>Generated value</th>";
+html += "<th>Category</th>";
+html += "<th style='width:42%;'>Visual value</th>";
+html += "</tr>";
+html += "</thead>";
+
+html += "<tbody>";
+
+for (var rowIndex = 1; rowIndex <= rowCount; rowIndex++) {
+
+    var rowValue = (rowIndex * 37) % 101;
+    var categoryNumber = rowIndex % 6;
+
+    var category = When(
+        categoryNumber == 0, "Alpha",
+        categoryNumber == 1, "Beta",
+        categoryNumber == 2, "Gamma",
+        categoryNumber == 3, "Delta",
+        categoryNumber == 4, "Epsilon",
+        "Zeta"
+    );
+
+    html += "<tr>";
+
+    html += "<td>";
+    html += Text(rowIndex);
+    html += "</td>";
+
+    html += "<td>";
+    html += Text(rowValue);
+    html += "</td>";
+
+    html += "<td>";
+    html += category;
+    html += "</td>";
+
+    html += "<td>";
+
+    html += "<div class='rowBar' style='";
+    html += "width:" + Text(rowValue) + "%;";
+    html += "'></div>";
+
+    html += "</td>";
+
+    html += "</tr>";
+}
+
+html += "</tbody>";
+html += "</table>";
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Large card wall
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>";
+html += "5. Card wall — " + Text(cardCount) + " elements";
+html += "</div>";
+
+html += "<div class='cardWall'>";
+
+for (var cardIndex = 1; cardIndex <= cardCount; cardIndex++) {
+
+    var hue = (cardIndex * 47) % 360;
+    var uniqueClass = 1 + ((cardIndex - 1) % selectorCount);
+
+    html += "<div class='stressCard stressCard";
+    html += Text(uniqueClass);
+    html += "' style='";
+
+    html += "background:";
+    html += "linear-gradient(135deg,";
+    html += "hsl(" + Text(hue) + ",75%,45%),";
+    html += "hsl(" + Text((hue + 55) % 360) + ",80%,32%)";
+    html += ");";
+
+    html += "'>";
+
+    html += "Card<br>" + Text(cardIndex);
+
+    html += "</div>";
+}
+
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Animation wall
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>";
+html += "6. Simultaneous animation load — ";
+html += Text(animationCount);
+html += " elements";
+html += "</div>";
+
+html += "<div class='animationWall'>";
+
+for (var animationIndex = 1;
+     animationIndex <= animationCount;
+     animationIndex++) {
+
+    var animationHue = (animationIndex * 61) % 360;
+    var animationDelay = (animationIndex % 20) * 0.07;
+    var animationDuration = 0.8 + ((animationIndex % 13) * 0.11);
+
+    html += "<div class='animationTile' style='";
+
+    html += "background:hsl(";
+    html += Text(animationHue);
+    html += ",80%,55%);";
+
+    html += "animation-delay:-";
+    html += Text(animationDelay);
+    html += "s;";
+
+    html += "animation-duration:";
+    html += Text(animationDuration);
+    html += "s;";
+
+    html += "'></div>";
+}
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:8px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "Observe animation smoothness while scrolling the table and card wall.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Data URI payloads
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>7. Generated data-URI image payloads</div>";
+
+html += "<div class='lab4Panel'>";
+
+html += "<div style='font-weight:700;'>Small data URI</div>";
+
+html += "<div style='font-size:11px;color:#94a3b8;'>";
+
+html += Text(Count(smallSvg));
+html += " URI characters, ";
+html += Text(smallSvgShapes);
+html += " generated shapes";
+
+html += "</div>";
+
+html += "<img class='dataImage' src='";
+html += smallSvg;
+html += "'>";
+
+
+html += "<div style='margin-top:14px;font-weight:700;'>";
+
+html += "Medium data URI";
+
+html += "</div>";
+
+html += "<div style='font-size:11px;color:#94a3b8;'>";
+
+html += Text(Count(mediumSvg));
+html += " URI characters, ";
+html += Text(mediumSvgShapes);
+html += " generated shapes";
+
+html += "</div>";
+
+html += "<img class='dataImage' src='";
+html += mediumSvg;
+html += "'>";
+
+
+html += "<div style='margin-top:14px;font-weight:700;'>";
+
+html += "Large data URI";
+
+html += "</div>";
+
+html += "<div style='font-size:11px;color:#94a3b8;'>";
+
+html += Text(Count(largeSvg));
+html += " URI characters, ";
+html += Text(largeSvgShapes);
+html += " generated shapes";
+
+html += "</div>";
+
+html += "<img class='dataImage' src='";
+html += largeSvg;
+html += "'>";
+
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Nested DOM
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>";
+html += "8. Nested DOM depth — ";
+html += Text(nestingDepth);
+html += " levels";
+html += "</div>";
+
+html += "<div class='nestViewport'>";
+
+for (var depthOpen = 1; depthOpen <= nestingDepth; depthOpen++) {
+
+    html += "<div class='nestLayer'>";
+}
+
+html += "<div style='";
+html += "padding:12px;";
+html += "background:#f59e0b;";
+html += "color:#111827;";
+html += "border-radius:6px;";
+html += "font-weight:700;";
+html += "text-align:center;";
+html += "'>";
+
+html += "DEEPEST LEVEL REACHED";
+
+html += "</div>";
+
+for (var depthClose = nestingDepth; depthClose >= 1; depthClose--) {
+
+    html += "</div>";
+}
+
+html += "</div>";
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Pixel scaling
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>9. Pixel grid and thin-line rendering</div>";
+
+html += "<div class='lab4Panel'>";
+
+html += "<div class='pixelGrid'></div>";
+
+html += "<div class='thinLines'>";
+
+html += "<div class='thinLine1'></div>";
+html += "<div class='thinLine2'></div>";
+html += "<div class='thinLine3'></div>";
+html += "<div class='thinLine4'></div>";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:10px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "The four horizontal samples are 1, 2, 3 and 4 CSS pixels thick.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// APPROXIMATE BUILD DIAGNOSTICS
+// =========================================================
+
+var buildElapsed = DateDiff(Now(), buildStarted, "milliseconds");
+var htmlCharactersBeforeDiagnostics = Count(html);
+
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>10. Expression diagnostics</div>";
+
+html += "<div style='";
+html += "padding:12px;";
+html += "background:#020617;";
+html += "border:1px solid #334155;";
+html += "border-radius:8px;";
+html += "font-family:Consolas,monospace;";
+html += "font-size:12px;";
+html += "line-height:1.7;";
+html += "'>";
+
+html += "Approximate Arcade construction time: ";
+html += "<strong>";
+html += Text(buildElapsed);
+html += " ms</strong><br>";
+
+html += "HTML characters before diagnostics: ";
+html += "<strong>";
+html += Text(htmlCharactersBeforeDiagnostics);
+html += "</strong><br>";
+
+html += "CSS characters: ";
+html += "<strong>";
+html += Text(Count(css));
+html += "</strong><br>";
+
+html += "Large SVG data-URI characters: ";
+html += "<strong>";
+html += Text(Count(largeSvg));
+html += "</strong><br>";
+
+html += "Feature OBJECTID: ";
+html += "<strong>";
+html += Text($feature.OBJECTID);
+html += "</strong>";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:10px;";
+html += "padding:10px;";
+html += "background:#312e81;";
+html += "border-radius:7px;";
+html += "font-size:11px;";
+html += "line-height:1.5;";
+html += "'>";
+
+html += "The Arcade timing value measures expression-side construction only. ";
+html += "It does not include the time ArcGIS Pro takes to sanitise, lay out, paint ";
+html += "and animate the returned HTML.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// Manual test protocol
+// ---------------------------------------------------------
+
+html += "<div class='lab4Section'>";
+
+html += "<div class='lab4Heading'>11. Manual persistence protocol</div>";
+
+html += "<div style='";
+html += "padding:12px;";
+html += "background:#7f1d1d;";
+html += "border:1px solid #fca5a5;";
+html += "border-radius:8px;";
+html += "font-size:12px;";
+html += "line-height:1.6;";
+html += "'>";
+
+html += "<strong>Test in this order:</strong><br>";
+
+html += "A. Change every control and scroll each internal region.<br>";
+html += "B. Close and reopen this same feature popup.<br>";
+html += "C. Open another feature and return to this feature.<br>";
+html += "D. Toggle the layer off and on.<br>";
+html += "E. Dock, float and resize the popup.<br>";
+html += "F. Save, close and reopen the ArcGIS Pro project.<br>";
+html += "G. Record which form values, disclosure states and scroll positions survive.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+html += "</div>";
+
+
+// =========================================================
+// RETURN POPUP ELEMENT
+// =========================================================
+
+return {
+    type: "text",
+    text: html
+};

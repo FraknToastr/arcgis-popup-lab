@@ -1,0 +1,1284 @@
+// =========================================================
+// POPUP LAB 5
+// Integration, URL handling, iframe execution,
+// sanitisation and security boundaries
+// =========================================================
+
+var build = "POPUP LAB — BUILD 005";
+var oid = Text($feature.OBJECTID);
+
+
+// ---------------------------------------------------------
+// HTML ENCODING
+// ---------------------------------------------------------
+
+function HtmlEncode(value) {
+
+    var output = Text(value);
+
+    output = Replace(output, "&", "&amp;");
+    output = Replace(output, "<", "&lt;");
+    output = Replace(output, ">", "&gt;");
+    output = Replace(output, '"', "&quot;");
+    output = Replace(output, "'", "&#39;");
+
+    return output;
+}
+
+
+// ---------------------------------------------------------
+// SHORT DATA-URI WAV FILE
+// ---------------------------------------------------------
+
+var audioUri = "";
+
+audioUri += "data:audio/wav;base64,";
+audioUri += "UklGRmQBAABXQVZFZm10IBAAAAABAAEAoA8AAKAPAAABAAgA";
+audioUri += "ZGF0YUABAACAprq0lm1NRFZ8o7q2mXFPRFR4oLm3nHRRRFF0";
+audioUri += "nLe5oHhURE9xmba6o3xWRE1tlrS6pn9ZRUtpkrK7qYNcRUlm";
+audioUri += "jrC7q4dfRkhji668rotjSEZfh6u7sI5mSUVcg6m7spJpS0VZ";
+audioUri += "gKa6tJZtTURWfKO6tplxT0RUeKC5t5x0UURRdJy3uaB4VERP";
+audioUri += "cZm2uqN8VkRNbZa0uqaAWUVLaZKyu6mDXEVJZo6wu6uHX0ZI";
+audioUri += "Y4uuvK6LY0hGX4eru7COZklFXIOpu7KSaUtFWYCmurSWbU1E";
+audioUri += "VnyjuraZcU9EVHigubecdFFEUXSct7mgeFRET3GZtrqjfFZET";
+audioUri += "W2WtLqmf1lFS2mSsrupg1xFSWaOsLurh19GSGOLrryui2NIR";
+audioUri += "l+Hq7uwjmZJRVyDqbuykmlLRVl/prq0lm1NRFZ8o7q2mXFPR";
+audioUri += "FR4oA==";
+
+
+// ---------------------------------------------------------
+// DATA-URI IFRAME APPLICATION
+//
+// The contained application:
+//   • runs JavaScript
+//   • has a clickable counter
+//   • attempts to use localStorage
+// ---------------------------------------------------------
+
+var iframeAppUri = "";
+
+iframeAppUri += "data:text/html;base64,";
+
+iframeAppUri += "PCFkb2N0eXBlIGh0bWw+CjxtZXRhIGNoYXJzZXQ9InV0Zi04";
+iframeAppUri += "Ij4KPHN0eWxlPgpib2R5e21hcmdpbjowO3BhZGRpbmc6MTRw";
+iframeAppUri += "eDtiYWNrZ3JvdW5kOiMwZjE3MmE7Y29sb3I6d2hpdGU7Zm9u";
+iframeAppUri += "dDoxNHB4IEFyaWFsLHNhbnMtc2VyaWZ9CiNib290e3BhZGRp";
+iframeAppUri += "bmc6OXB4O2JhY2tncm91bmQ6IzdmMWQxZDtib3JkZXItcmFk";
+iframeAppUri += "aXVzOjZweDtmb250LXdlaWdodDo3MDB9CmJ1dHRvbnttYXJn";
+iframeAppUri += "aW4tdG9wOjEwcHg7cGFkZGluZzo4cHggMTJweDtib3JkZXI6";
+iframeAppUri += "MDtib3JkZXItcmFkaXVzOjZweDtiYWNrZ3JvdW5kOiMyNTYz";
+iframeAppUri += "ZWI7Y29sb3I6d2hpdGU7Zm9udC13ZWlnaHQ6NzAwO2N1cnNv";
+iframeAppUri += "cjpwb2ludGVyfQojY291bnQsI3N0b3JhZ2V7bWFyZ2luLXRv";
+iframeAppUri += "cDo4cHg7cGFkZGluZzo3cHg7YmFja2dyb3VuZDojMWUyOTNi";
+iframeAppUri += "O2JvcmRlci1yYWRpdXM6NXB4fQo8L3N0eWxlPgo8ZGl2IGlk";
+iframeAppUri += "PSJib290Ij5JRlJBTUUgU0NSSVBUIEhBUyBOT1QgUlVOPC9k";
+iframeAppUri += "aXY+CjxidXR0b24gaWQ9ImIiIHR5cGU9ImJ1dHRvbiI+SW5j";
+iframeAppUri += "cmVtZW50IGlmcmFtZSBjb3VudGVyPC9idXR0b24+CjxkaXYg";
+iframeAppUri += "aWQ9ImNvdW50Ij5CdXR0b24gY291bnQ6IDA8L2Rpdj4KPGRp";
+iframeAppUri += "diBpZD0ic3RvcmFnZSI+U3RvcmFnZTogbm90IHRlc3RlZDwv";
+iframeAppUri += "ZGl2Pgo8c2NyaXB0Pgpkb2N1bWVudC5nZXRFbGVtZW50QnlJ";
+iframeAppUri += "ZCgnYm9vdCcpLnRleHRDb250ZW50PSdJRlJBTUUgSkFWQVND";
+iframeAppUri += "UklQVCBFWEVDVVRFRCc7CmxldCBuPTA7CmRvY3VtZW50Lmdl";
+iframeAppUri += "dEVsZW1lbnRCeUlkKCdiJykub25jbGljaz1mdW5jdGlvbigp";
+iframeAppUri += "ewogIG4rPTE7CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQo";
+iframeAppUri += "J2NvdW50JykudGV4dENvbnRlbnQ9J0J1dHRvbiBjb3VudDog";
+iframeAppUri += "JytuOwp9Owp0cnl7CiAgY29uc3Qga2V5PSdhcmNnaXMtcG9w";
+iframeAppUri += "dXAtbGFiNS1vcGVuLWNvdW50JzsKICBjb25zdCB2YWx1ZT1O";
+iframeAppUri += "dW1iZXIobG9jYWxTdG9yYWdlLmdldEl0ZW0oa2V5KXx8MCkr";
+iframeAppUri += "MTsKICBsb2NhbFN0b3JhZ2Uuc2V0SXRlbShrZXksU3RyaW5n";
+iframeAppUri += "KHZhbHVlKSk7CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQo";
+iframeAppUri += "J3N0b3JhZ2UnKS50ZXh0Q29udGVudD0nbG9jYWxTdG9yYWdl";
+iframeAppUri += "IG9wZW4gY291bnQ6ICcrdmFsdWU7Cn1jYXRjaChlcnJvcil7";
+iframeAppUri += "CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3N0b3JhZ2Un";
+iframeAppUri += "KS50ZXh0Q29udGVudD0nbG9jYWxTdG9yYWdlIGJsb2NrZWQ6";
+iframeAppUri += "ICcrZXJyb3IubmFtZTsKfQo8L3NjcmlwdD4=";
+
+
+// ---------------------------------------------------------
+// DYNAMIC DATA-URI IFRAME
+// ---------------------------------------------------------
+
+var dynamicFrameUri = "";
+
+dynamicFrameUri += "data:text/html,";
+dynamicFrameUri += "%3Chtml%3E";
+dynamicFrameUri += "%3Cbody%20style%3D%22";
+dynamicFrameUri += "margin%3A0%3B";
+dynamicFrameUri += "padding%3A20px%3B";
+dynamicFrameUri += "background%3Alinear-gradient(135deg%2C%23065f46%2C%230891b2)%3B";
+dynamicFrameUri += "color%3Awhite%3B";
+dynamicFrameUri += "font-family%3AArial%3B";
+dynamicFrameUri += "text-align%3Acenter%3B";
+dynamicFrameUri += "%22%3E";
+
+dynamicFrameUri += "%3Ch2%3EDYNAMIC%20IFRAME%3C%2Fh2%3E";
+dynamicFrameUri += "%3Cp%3EFeature%20OBJECTID%3A%20";
+dynamicFrameUri += oid;
+dynamicFrameUri += "%3C%2Fp%3E";
+
+dynamicFrameUri += "%3C%2Fbody%3E";
+dynamicFrameUri += "%3C%2Fhtml%3E";
+
+
+// ---------------------------------------------------------
+// CSS
+// ---------------------------------------------------------
+
+var html = "";
+
+html += "<style>";
+
+// Data stylesheet import test must precede other rules.
+html += "@import url('data:text/css,";
+html += ".lab5Imported%7B";
+html += "background%3A%237c3aed%20!important%3B";
+html += "color%3Awhite%20!important%3B";
+html += "%7D";
+html += "');";
+
+html += ".lab5Root,.lab5Root *{box-sizing:border-box;}";
+
+html += ".lab5Section{";
+html += "margin-top:20px;";
+html += "}";
+
+html += ".lab5Heading{";
+html += "margin-bottom:8px;";
+html += "font-size:16px;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".lab5Panel{";
+html += "padding:12px;";
+html += "background:#1f2937;";
+html += "border:1px solid #475569;";
+html += "border-radius:9px;";
+html += "}";
+
+html += ".lab5Grid{";
+html += "display:grid;";
+html += "grid-template-columns:repeat(auto-fit,minmax(145px,1fr));";
+html += "gap:9px;";
+html += "}";
+
+html += ".mediaCard{";
+html += "overflow:hidden;";
+html += "background:#0f172a;";
+html += "border:1px solid #475569;";
+html += "border-radius:8px;";
+html += "}";
+
+html += ".mediaCard img{";
+html += "display:block;";
+html += "width:100%;";
+html += "height:115px;";
+html += "object-fit:cover;";
+html += "background:#e2e8f0;";
+html += "}";
+
+html += ".mediaLabel{";
+html += "padding:8px;";
+html += "font-size:11px;";
+html += "font-weight:700;";
+html += "text-align:center;";
+html += "}";
+
+html += ".lab5Link{";
+html += "display:block;";
+html += "padding:9px 11px;";
+html += "margin-bottom:7px;";
+html += "background:#334155;";
+html += "color:#ffffff;";
+html += "border-radius:6px;";
+html += "text-decoration:none;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".lab5Link:hover{";
+html += "background:#0369a1;";
+html += "transform:translateX(5px);";
+html += "}";
+
+html += ".testFrame{";
+html += "display:block;";
+html += "width:100%;";
+html += "height:190px;";
+html += "background:#e2e8f0;";
+html += "border:3px solid #38bdf8;";
+html += "border-radius:9px;";
+html += "}";
+
+html += ".statusBox{";
+html += "padding:10px;";
+html += "margin-top:8px;";
+html += "background:#7f1d1d;";
+html += "border:2px solid #f87171;";
+html += "border-radius:7px;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".backgroundImageTest{";
+html += "min-height:150px;";
+html += "padding:18px;";
+html += "display:flex;";
+html += "align-items:flex-end;";
+html += "background-color:#334155;";
+html += "background-image:";
+html += "linear-gradient(0deg,rgba(0,0,0,.8),rgba(0,0,0,.05)),";
+html += "url('https://www.gstatic.com/webp/gallery/1.webp');";
+html += "background-position:center;";
+html += "background-size:cover;";
+html += "border-radius:9px;";
+html += "font-size:18px;";
+html += "font-weight:700;";
+html += "}";
+
+html += ".printOnly{display:none;}";
+
+html += "@media print{";
+
+html += ".screenOnly{display:none!important;}";
+html += ".printOnly{display:block!important;}";
+
+html += ".lab5Root{";
+html += "background:white!important;";
+html += "color:black!important;";
+html += "}";
+
+html += "}";
+
+html += "</style>";
+
+
+// ---------------------------------------------------------
+// EXTERNAL DATA STYLESHEET TEST
+// ---------------------------------------------------------
+
+html += "<link ";
+html += "rel='stylesheet' ";
+html += "href='data:text/css,";
+html += ".lab5Linked%7B";
+html += "background%3A%23dc2626%20!important%3B";
+html += "color%3Awhite%20!important%3B";
+html += "%7D";
+html += "'>";
+
+
+// =========================================================
+// ROOT
+// =========================================================
+
+html += "<div class='lab5Root' style='";
+html += "width:100%;";
+html += "padding:14px;";
+html += "background:#111827;";
+html += "color:#ffffff;";
+html += "border-radius:14px;";
+html += "font-family:Arial,sans-serif;";
+html += "'>";
+
+
+// ---------------------------------------------------------
+// HEADER
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "padding:9px 11px;";
+html += "margin-bottom:13px;";
+html += "background:#c2410c;";
+html += "border-radius:7px;";
+html += "font-weight:700;";
+html += "letter-spacing:1px;";
+html += "'>";
+
+html += build;
+
+html += "</div>";
+
+html += "<div style='font-size:26px;font-weight:700;'>";
+
+html += "Integration and security laboratory";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:4px;";
+html += "color:#7dd3fc;";
+html += "font-size:12px;";
+html += "'>";
+
+html += "Remote media, links, forms, iframe applications, storage and sanitisation";
+
+html += "</div>";
+
+
+// =========================================================
+// 1. REMOTE IMAGE FORMATS
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>1. Remote image formats</div>";
+
+html += "<div class='lab5Grid'>";
+
+
+// PNG
+
+html += "<div class='mediaCard'>";
+
+html += "<img ";
+html += "src='https://www.w3.org/Icons/w3c_home.png' ";
+html += "alt='Remote PNG test'>";
+
+html += "<div class='mediaLabel'>";
+html += "Remote PNG";
+html += "</div>";
+
+html += "</div>";
+
+
+// JPEG
+
+html += "<div class='mediaCard'>";
+
+html += "<img ";
+html += "src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Example.jpg/320px-Example.jpg' ";
+html += "alt='Remote JPEG test'>";
+
+html += "<div class='mediaLabel'>";
+html += "Remote JPEG";
+html += "</div>";
+
+html += "</div>";
+
+
+// WEBP
+
+html += "<div class='mediaCard'>";
+
+html += "<img ";
+html += "src='https://www.gstatic.com/webp/gallery/1.webp' ";
+html += "alt='Remote WebP test'>";
+
+html += "<div class='mediaLabel'>";
+html += "Remote WebP";
+html += "</div>";
+
+html += "</div>";
+
+
+// ANIMATED GIF
+
+html += "<div class='mediaCard'>";
+
+html += "<img ";
+html += "src='https://upload.wikimedia.org/wikipedia/commons/d/de/Ajax-loader.gif' ";
+html += "alt='Animated GIF test' ";
+html += "style='object-fit:contain;'>";
+
+html += "<div class='mediaLabel'>";
+html += "Animated GIF";
+html += "</div>";
+
+html += "</div>";
+
+
+// REMOTE SVG AS IMG
+
+html += "<div class='mediaCard'>";
+
+html += "<img ";
+html += "src='https://upload.wikimedia.org/wikipedia/commons/0/02/SVG_logo.svg' ";
+html += "alt='Remote SVG image test' ";
+html += "style='object-fit:contain;padding:8px;'>";
+
+html += "<div class='mediaLabel'>";
+html += "Remote SVG through IMG";
+html += "</div>";
+
+html += "</div>";
+
+
+// PICTURE / SOURCE
+
+html += "<div class='mediaCard'>";
+
+html += "<picture>";
+
+html += "<source ";
+html += "srcset='https://www.gstatic.com/webp/gallery/1.webp' ";
+html += "type='image/webp'>";
+
+html += "<img ";
+html += "src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Example.jpg/320px-Example.jpg' ";
+html += "alt='Picture and source test'>";
+
+html += "</picture>";
+
+html += "<div class='mediaLabel'>";
+html += "PICTURE with SOURCE";
+html += "</div>";
+
+html += "</div>";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "A failed remote image can indicate either popup restrictions, ";
+html += "network filtering or the remote server rejecting the request.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 2. CSS REMOTE BACKGROUND
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>2. Remote image through CSS</div>";
+
+html += "<div class='backgroundImageTest'>";
+
+html += "Remote WebP used as a CSS background image";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 3. AUDIO
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>3. Embedded audio</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<div style='margin-bottom:8px;'>";
+
+html += "Press Play. The embedded WAV is a very short tone.";
+
+html += "</div>";
+
+html += "<audio ";
+html += "controls ";
+html += "preload='none' ";
+html += "style='width:100%;'>";
+
+html += "<source ";
+html += "src='";
+html += audioUri;
+html += "' ";
+html += "type='audio/wav'>";
+
+html += "Audio fallback text";
+
+html += "</audio>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 4. URL PROTOCOLS AND DOWNLOADS
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>4. URL schemes, targets and downloads</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='https://example.com/?objectid=";
+html += oid;
+html += "' ";
+html += "target='_blank' ";
+html += "rel='noopener noreferrer'>";
+
+html += "HTTPS link with OBJECTID query parameter";
+
+html += "</a>";
+
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='mailto:popup-lab@example.com?";
+html += "subject=ArcGIS%20Popup%20Lab%205%20OID%20";
+html += oid;
+html += "'>";
+
+html += "MAILTO link";
+
+html += "</a>";
+
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='tel:+61000000000'>";
+
+html += "TEL link using a dummy number";
+
+html += "</a>";
+
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='data:text/plain;charset=utf-8,";
+html += "ArcGIS%20Popup%20Lab%205%0AOBJECTID%3A%20";
+html += oid;
+html += "' ";
+html += "download='popup-lab-5.txt'>";
+
+html += "DATA-URI file download";
+
+html += "</a>";
+
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='popup-lab-5-relative.html'>";
+
+html += "Relative URL test";
+
+html += "</a>";
+
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='file:///C:/Windows/win.ini'>";
+
+html += "Local FILE URL test";
+
+html += "</a>";
+
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='file://server/share/popup-lab-5.txt'>";
+
+html += "UNC-style FILE URL test";
+
+html += "</a>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 5. HTML FORM SUBMISSION
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>5. Native GET form submission</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<form ";
+html += "action='https://example.com/' ";
+html += "method='get' ";
+html += "target='_blank'>";
+
+html += "<label>Submitted OBJECTID</label>";
+
+html += "<input ";
+html += "type='text' ";
+html += "name='objectid' ";
+html += "value='";
+html += oid;
+html += "' ";
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "padding:8px;";
+html += "margin:7px 0;";
+html += "border:2px solid #60a5fa;";
+html += "border-radius:6px;";
+html += "'>";
+
+html += "<input ";
+html += "type='submit' ";
+html += "value='Submit GET form' ";
+html += "style='";
+html += "padding:9px 14px;";
+html += "background:#2563eb;";
+html += "color:white;";
+html += "border:0;";
+html += "border-radius:6px;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "</form>";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "This determines whether the FORM element and submit behaviour survive sanitisation.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 6. FEATURE-DRIVEN IFRAME
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>6. Arcade-generated iframe content</div>";
+
+html += "<iframe ";
+html += "class='testFrame' ";
+html += "src='";
+html += dynamicFrameUri;
+html += "'>";
+
+html += "Dynamic iframe fallback text";
+
+html += "</iframe>";
+
+html += "<div style='";
+html += "margin-top:8px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "The iframe should display this feature's OBJECTID: ";
+html += "<strong>";
+html += oid;
+html += "</strong>";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 7. JAVASCRIPT INSIDE AN IFRAME
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>7. JavaScript inside an iframe</div>";
+
+html += "<iframe ";
+html += "class='testFrame' ";
+html += "src='";
+html += iframeAppUri;
+html += "'>";
+
+html += "Iframe application fallback";
+
+html += "</iframe>";
+
+html += "<div style='";
+html += "margin-top:8px;";
+html += "padding:9px;";
+html += "background:#312e81;";
+html += "border-radius:7px;";
+html += "font-size:11px;";
+html += "line-height:1.5;";
+html += "'>";
+
+html += "Successful JavaScript execution displays ";
+html += "<strong>IFRAME JAVASCRIPT EXECUTED</strong>. ";
+html += "Click the counter several times. Also record the localStorage result.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 8. IFRAME SANDBOX TESTS
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>8. Iframe sandbox permissions</div>";
+
+html += "<div class='lab5Grid'>";
+
+
+// NO SCRIPT PERMISSION
+
+html += "<div>";
+
+html += "<div style='margin-bottom:6px;font-weight:700;'>";
+
+html += "Sandbox without scripts";
+
+html += "</div>";
+
+html += "<iframe ";
+html += "class='testFrame' ";
+html += "sandbox='' ";
+html += "src='";
+html += iframeAppUri;
+html += "'>";
+
+html += "Sandbox fallback";
+
+html += "</iframe>";
+
+html += "</div>";
+
+
+// SCRIPT PERMISSION
+
+html += "<div>";
+
+html += "<div style='margin-bottom:6px;font-weight:700;'>";
+
+html += "Sandbox with allow-scripts";
+
+html += "</div>";
+
+html += "<iframe ";
+html += "class='testFrame' ";
+html += "sandbox='allow-scripts allow-forms' ";
+html += "src='";
+html += iframeAppUri;
+html += "'>";
+
+html += "Sandbox script fallback";
+
+html += "</iframe>";
+
+html += "</div>";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:8px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "line-height:1.5;";
+html += "'>";
+
+html += "Expected if the sandbox attribute is retained: the first iframe remains ";
+html += "at SCRIPT HAS NOT RUN; the second executes JavaScript. ";
+html += "Data-URI localStorage may still be unavailable because it has an opaque origin.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 9. EXTERNAL EMBED WITH SANDBOX PERMISSIONS
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>9. Sandboxed external web application</div>";
+
+html += "<iframe ";
+
+html += "src='https://www.openstreetmap.org/export/embed.html?";
+html += "bbox=138.575%2C-34.945%2C138.625%2C-34.895";
+html += "&amp;layer=mapnik";
+html += "&amp;marker=-34.9285%2C138.6007' ";
+
+html += "sandbox='";
+html += "allow-scripts ";
+html += "allow-same-origin ";
+html += "allow-forms ";
+html += "allow-popups";
+html += "' ";
+
+html += "loading='lazy' ";
+
+html += "referrerpolicy='no-referrer' ";
+
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:280px;";
+html += "background:#e2e8f0;";
+html += "border:3px solid #22c55e;";
+html += "border-radius:9px;";
+html += "'>";
+
+html += "OpenStreetMap iframe fallback";
+
+html += "</iframe>";
+
+html += "<div style='";
+html += "margin-top:8px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "Check whether map panning, zooming and links still work under sandbox restrictions.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 10. PARENT DOCUMENT SCRIPT AND EVENT ATTRIBUTES
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>10. Parent popup script and event sanitisation</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<div id='parentScriptStatus' class='statusBox'>";
+
+html += "PARENT SCRIPT DID NOT RUN";
+
+html += "</div>";
+
+
+// Direct script
+
+html += "<script>";
+
+html += "document.getElementById('parentScriptStatus')";
+html += ".textContent='PARENT SCRIPT EXECUTED';";
+
+html += "</script>";
+
+
+// Inline click handler
+
+html += "<a ";
+html += "class='lab5Link' ";
+html += "href='javascript:void(0)' ";
+html += "onclick=\"";
+html += "document.getElementById('parentScriptStatus')";
+html += ".textContent='ONCLICK EXECUTED';";
+html += "return false;";
+html += "\" ";
+html += "style='margin-top:10px;'>";
+
+html += "Attempt parent onclick event";
+
+html += "</a>";
+
+
+// Image error event
+
+html += "<img ";
+html += "src='https://popup-lab-5.invalid/missing-image.png' ";
+html += "alt='Broken image event test' ";
+html += "onerror=\"";
+html += "document.getElementById('parentScriptStatus')";
+html += ".textContent='IMAGE ONERROR EXECUTED';";
+html += "\" ";
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "min-height:40px;";
+html += "margin-top:8px;";
+html += "background:#334155;";
+html += "border:2px dashed #f87171;";
+html += "'>";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "line-height:1.5;";
+html += "'>";
+
+html += "The status should remain PARENT SCRIPT DID NOT RUN before and after ";
+html += "clicking the link and after the image fails.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 11. STYLESHEET LOADING
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>11. Stylesheet integration</div>";
+
+html += "<div class='lab5Grid'>";
+
+html += "<div ";
+html += "class='lab5Imported' ";
+html += "style='";
+html += "padding:18px;";
+html += "background:#065f46;";
+html += "border-radius:8px;";
+html += "text-align:center;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "@import test";
+html += "<br>";
+html += "Purple means imported";
+
+html += "</div>";
+
+
+html += "<div ";
+html += "class='lab5Linked' ";
+html += "style='";
+html += "padding:18px;";
+html += "background:#065f46;";
+html += "border-radius:8px;";
+html += "text-align:center;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "LINK stylesheet test";
+html += "<br>";
+html += "Red means linked";
+
+html += "</div>";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:8px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "Green means the corresponding external stylesheet mechanism was ignored or removed.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 12. ESCAPING AND MARKUP INJECTION
+// =========================================================
+
+var markupSample = "";
+
+markupSample += "<strong>Markup was interpreted</strong>";
+markupSample += " & ";
+markupSample += "<em>special characters</em>";
+markupSample += " \"double quotes\" and 'single quotes'";
+
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>12. HTML encoding and injected markup</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<div style='margin-bottom:7px;font-weight:700;'>";
+
+html += "Unencoded value";
+
+html += "</div>";
+
+html += "<div style='";
+html += "padding:10px;";
+html += "margin-bottom:12px;";
+html += "background:#334155;";
+html += "border-radius:6px;";
+html += "'>";
+
+html += markupSample;
+
+html += "</div>";
+
+
+html += "<div style='margin-bottom:7px;font-weight:700;'>";
+
+html += "HTML-encoded value";
+
+html += "</div>";
+
+html += "<div style='";
+html += "padding:10px;";
+html += "background:#334155;";
+html += "border-radius:6px;";
+html += "font-family:Consolas,monospace;";
+html += "word-break:break-all;";
+html += "'>";
+
+html += HtmlEncode(markupSample);
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "font-size:11px;";
+html += "color:#fcd34d;";
+html += "line-height:1.5;";
+html += "'>";
+
+html += "Any feature value inserted into HTML should be encoded unless the value ";
+html += "is intentionally trusted markup.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 13. MALFORMED HTML RECOVERY
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>13. Malformed HTML recovery</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<div style='";
+html += "padding:10px;";
+html += "background:#713f12;";
+html += "border-radius:6px;";
+html += "'>";
+
+html += "<strong>Mismatched nesting begins ";
+html += "<em>italic content";
+html += "</strong>";
+html += " content after mismatched closing tag";
+html += "</em>";
+
+html += "<p style='margin-bottom:0;'>";
+
+html += "Paragraph without an explicit closing tag";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "padding:9px;";
+html += "background:#065f46;";
+html += "border-radius:6px;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "RECOVERY MARKER";
+
+html += "</div>";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "If the recovery marker and later sections render normally, ";
+html += "the renderer successfully repaired the malformed structure.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 14. OBJECT AND EMBED ELEMENTS
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>14. Object and embed elements</div>";
+
+html += "<div class='lab5Grid'>";
+
+html += "<div>";
+
+html += "<div style='margin-bottom:6px;font-weight:700;'>OBJECT</div>";
+
+html += "<object ";
+html += "data='";
+html += dynamicFrameUri;
+html += "' ";
+html += "type='text/html' ";
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:140px;";
+html += "background:#e2e8f0;";
+html += "border:3px solid #f59e0b;";
+html += "'>";
+
+html += "Object fallback text";
+
+html += "</object>";
+
+html += "</div>";
+
+
+html += "<div>";
+
+html += "<div style='margin-bottom:6px;font-weight:700;'>EMBED</div>";
+
+html += "<embed ";
+html += "src='";
+html += dynamicFrameUri;
+html += "' ";
+html += "type='text/html' ";
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:140px;";
+html += "background:#e2e8f0;";
+html += "border:3px solid #ec4899;";
+html += "'>";
+
+html += "</div>";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// 15. PRINT MEDIA QUERY
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>15. Print-media styling</div>";
+
+html += "<div class='lab5Panel'>";
+
+html += "<div class='screenOnly' style='";
+html += "padding:10px;";
+html += "background:#0369a1;";
+html += "border-radius:6px;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "SCREEN VERSION";
+
+html += "</div>";
+
+html += "<div class='printOnly' style='";
+html += "padding:10px;";
+html += "border:3px solid black;";
+html += "font-weight:700;";
+html += "'>";
+
+html += "PRINT MEDIA QUERY ACTIVE";
+
+html += "</div>";
+
+html += "<div style='";
+html += "margin-top:9px;";
+html += "font-size:11px;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "Test this only through a workflow that actually prints or captures ";
+html += "the popup document. Ordinary map export may omit open popup windows.";
+
+html += "</div>";
+
+html += "</div>";
+html += "</div>";
+
+
+// =========================================================
+// 16. LAB PROTOCOL
+// =========================================================
+
+html += "<div class='lab5Section'>";
+
+html += "<div class='lab5Heading'>16. Manual test protocol</div>";
+
+html += "<div style='";
+html += "padding:12px;";
+html += "background:#7f1d1d;";
+html += "border:1px solid #fca5a5;";
+html += "border-radius:8px;";
+html += "font-size:12px;";
+html += "line-height:1.65;";
+html += "'>";
+
+html += "<strong>Record these results:</strong><br>";
+
+html += "A. Which remote image formats render and animate.<br>";
+html += "B. Whether the WAV control plays the embedded tone.<br>";
+html += "C. Which link protocols launch successfully.<br>";
+html += "D. Whether the data-URI download creates a file.<br>";
+html += "E. Whether the GET form opens a URL containing objectid.<br>";
+html += "F. Whether JavaScript executes inside the unrestricted iframe.<br>";
+html += "G. The exact localStorage message shown by that iframe.<br>";
+html += "H. Whether the two sandboxed iframe results differ.<br>";
+html += "I. Whether the sandboxed OpenStreetMap remains interactive.<br>";
+html += "J. Whether parent script, onclick or onerror ever executes.<br>";
+html += "K. Whether @import or LINK stylesheets apply.<br>";
+html += "L. Whether OBJECT or EMBED content survives.<br>";
+html += "M. Whether any link unexpectedly replaces the popup itself.";
+
+html += "</div>";
+
+html += "</div>";
+
+
+// =========================================================
+// DIAGNOSTICS
+// =========================================================
+
+html += "<div style='";
+html += "margin-top:20px;";
+html += "padding:11px;";
+html += "background:#020617;";
+html += "border:1px solid #334155;";
+html += "border-radius:8px;";
+html += "font-family:Consolas,monospace;";
+html += "font-size:11px;";
+html += "line-height:1.6;";
+html += "'>";
+
+html += "OBJECTID: ";
+html += oid;
+html += "<br>";
+
+html += "Iframe application URI characters: ";
+html += Text(Count(iframeAppUri));
+html += "<br>";
+
+html += "Audio URI characters: ";
+html += Text(Count(audioUri));
+html += "<br>";
+
+html += "Total returned HTML characters: ";
+html += Text(Count(html));
+
+html += "</div>";
+
+
+html += "</div>";
+
+
+// =========================================================
+// RETURN
+// =========================================================
+
+return {
+    type: "text",
+    text: html
+};

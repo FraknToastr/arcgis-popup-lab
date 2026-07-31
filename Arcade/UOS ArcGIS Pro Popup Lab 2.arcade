@@ -1,0 +1,642 @@
+var build = "POPUP LAB — BUILD 002";
+var html = "";
+
+html += "<style>";
+
+html += "@keyframes popupPulse {";
+html += "0% { transform:scale(1); opacity:0.55; }";
+html += "100% { transform:scale(1.04); opacity:1; }";
+html += "}";
+
+html += ".popupPulse {";
+html += "animation:popupPulse 0.8s ease-in-out infinite alternate;";
+html += "}";
+
+html += ".popupHover:hover {";
+html += "background:#f97316 !important;";
+html += "transform:translateX(18px);";
+html += "}";
+
+html += "</style>";
+
+
+html += "<div style='";
+html += "box-sizing:border-box;";
+html += "padding:14px;";
+html += "background:#111827;";
+html += "color:#ffffff;";
+html += "border-radius:13px;";
+html += "font-family:Arial,sans-serif;";
+html += "width:100%;";
+html += "'>";
+
+
+// ---------------------------------------------------------
+// Build marker
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "padding:8px 10px;";
+html += "margin-bottom:12px;";
+html += "background:#dc2626;";
+html += "border-radius:7px;";
+html += "font-weight:bold;";
+html += "font-size:14px;";
+html += "letter-spacing:1px;";
+html += "'>";
+
+html += build;
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "font-size:25px;";
+html += "font-weight:bold;";
+html += "margin-bottom:4px;";
+html += "'>";
+
+html += "Advanced popup capability test";
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "font-size:12px;";
+html += "color:#93c5fd;";
+html += "margin-bottom:18px;";
+html += "'>";
+
+html += "Iframes, controls, animation, SVG and modern CSS";
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// 1. SRCDOC IFRAME
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:6px;";
+html += "'>";
+
+html += "1. Self-contained iframe using srcdoc";
+
+html += "</div>";
+
+
+html += "<iframe ";
+html += "style='";
+html += "display:block;";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "height:100px;";
+html += "margin-bottom:15px;";
+html += "border:3px solid #22c55e;";
+html += "border-radius:8px;";
+html += "background:#e5e7eb;";
+html += "' ";
+
+html += "srcdoc='";
+html += "&lt;div style=&quot;";
+html += "box-sizing:border-box;";
+html += "height:100%;";
+html += "padding:18px;";
+html += "background:linear-gradient(135deg,#065f46,#10b981);";
+html += "color:white;";
+html += "font-family:Arial;";
+html += "font-size:18px;";
+html += "font-weight:bold;";
+html += "text-align:center;";
+html += "&quot;&gt;";
+html += "SRCDOC IFRAME WORKED";
+html += "&lt;br&gt;";
+html += "&lt;span style=&quot;font-size:11px;font-weight:normal;&quot;&gt;";
+html += "This content exists entirely inside the iframe.";
+html += "&lt;/span&gt;";
+html += "&lt;/div&gt;";
+html += "'>";
+
+html += "Iframe fallback text";
+
+html += "</iframe>";
+
+
+// ---------------------------------------------------------
+// 2. REMOTE IFRAME
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:6px;";
+html += "'>";
+
+html += "2. Remote HTTPS iframe";
+
+html += "</div>";
+
+
+html += "<iframe ";
+html += "src='https://example.com/' ";
+html += "style='";
+html += "display:block;";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "height:150px;";
+html += "margin-bottom:15px;";
+html += "border:3px solid #38bdf8;";
+html += "border-radius:8px;";
+html += "background:#e5e7eb;";
+html += "'>";
+
+html += "Remote iframe fallback text";
+
+html += "</iframe>";
+
+
+// ---------------------------------------------------------
+// 3. FORM CONTROLS
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "3. Native form controls";
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "padding:12px;";
+html += "margin-bottom:15px;";
+html += "background:#1f2937;";
+html += "border:1px solid #475569;";
+html += "border-radius:8px;";
+html += "'>";
+
+
+html += "<div style='margin-bottom:9px;'>";
+
+html += "<input type='checkbox' checked> ";
+html += "Checked checkbox";
+
+html += "&nbsp;&nbsp;&nbsp;";
+
+html += "<input type='checkbox'> ";
+html += "Unchecked checkbox";
+
+html += "</div>";
+
+
+html += "<div style='margin-bottom:9px;'>";
+
+html += "<input type='radio' name='popupRadio' checked> ";
+html += "Radio A";
+
+html += "&nbsp;&nbsp;&nbsp;";
+
+html += "<input type='radio' name='popupRadio'> ";
+html += "Radio B";
+
+html += "</div>";
+
+
+html += "<div style='margin-bottom:9px;'>";
+
+html += "Range: ";
+html += "<input type='range' min='0' max='100' value='65' ";
+html += "style='width:65%;'>";
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "display:grid;";
+html += "grid-template-columns:1fr 1fr;";
+html += "gap:7px;";
+html += "margin-bottom:9px;";
+html += "'>";
+
+
+html += "<input ";
+html += "type='text' ";
+html += "value='Editable text?' ";
+html += "style='";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "padding:7px;";
+html += "border:2px solid #60a5fa;";
+html += "border-radius:5px;";
+html += "'>";
+
+
+html += "<input ";
+html += "type='number' ";
+html += "value='42' ";
+html += "style='";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "padding:7px;";
+html += "border:2px solid #a78bfa;";
+html += "border-radius:5px;";
+html += "'>";
+
+
+html += "<input ";
+html += "type='date' ";
+html += "value='2026-07-31' ";
+html += "style='";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "padding:7px;";
+html += "border-radius:5px;";
+html += "'>";
+
+
+html += "<input ";
+html += "type='color' ";
+html += "value='#22c55e' ";
+html += "style='";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "height:36px;";
+html += "'>";
+
+
+html += "</div>";
+
+
+html += "<select style='";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "padding:7px;";
+html += "margin-bottom:8px;";
+html += "border-radius:5px;";
+html += "'>";
+
+html += "<option>Select option A</option>";
+html += "<option>Select option B</option>";
+html += "<option>Select option C</option>";
+
+html += "</select>";
+
+
+html += "<textarea ";
+html += "rows='3' ";
+html += "style='";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "padding:8px;";
+html += "margin-bottom:8px;";
+html += "border-radius:5px;";
+html += "'>";
+
+html += "Can this textarea be edited?";
+
+html += "</textarea>";
+
+
+html += "<button ";
+html += "type='button' ";
+html += "style='";
+html += "padding:9px 16px;";
+html += "background:#2563eb;";
+html += "color:white;";
+html += "border:0;";
+html += "border-radius:6px;";
+html += "font-weight:bold;";
+html += "'>";
+
+html += "Native button";
+
+html += "</button>";
+
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// 4. DISCLOSURE AND STATUS CONTROLS
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "4. Disclosure and status elements";
+
+html += "</div>";
+
+
+html += "<details style='";
+html += "padding:10px;";
+html += "margin-bottom:10px;";
+html += "background:#312e81;";
+html += "border-radius:7px;";
+html += "'>";
+
+html += "<summary style='font-weight:bold;cursor:pointer;'>";
+
+html += "Click to expand details";
+
+html += "</summary>";
+
+html += "<div style='padding-top:9px;color:#ddd6fe;'>";
+
+html += "The details and summary elements are functioning.";
+
+html += "</div>";
+
+html += "</details>";
+
+
+html += "<div style='margin-bottom:7px;'>";
+
+html += "Progress ";
+html += "<progress value='72' max='100' style='width:70%;'></progress>";
+
+html += "</div>";
+
+
+html += "<div style='margin-bottom:15px;'>";
+
+html += "Meter ";
+html += "<meter min='0' max='100' low='30' high='80' value='67' ";
+html += "style='width:70%;'></meter>";
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// 5. STYLE BLOCK, ANIMATION AND HOVER
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "5. Style block, animation and hover";
+
+html += "</div>";
+
+
+html += "<div class='popupPulse' style='";
+html += "padding:13px;";
+html += "margin:8px 5px 14px 5px;";
+html += "background:#db2777;";
+html += "border-radius:8px;";
+html += "text-align:center;";
+html += "font-weight:bold;";
+html += "'>";
+
+html += "This panel should pulse continuously";
+
+html += "</div>";
+
+
+html += "<div class='popupHover' style='";
+html += "padding:13px;";
+html += "margin-bottom:15px;";
+html += "background:#0369a1;";
+html += "border-radius:8px;";
+html += "transition:all 0.3s ease;";
+html += "font-weight:bold;";
+html += "'>";
+
+html += "Hover over this panel";
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// 6. MODERN INLINE CSS
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "6. Modern inline CSS";
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "display:grid;";
+html += "grid-template-columns:repeat(3,1fr);";
+html += "gap:8px;";
+html += "margin-bottom:15px;";
+html += "'>";
+
+
+html += "<div style='";
+html += "padding:16px 5px;";
+html += "background:#7c3aed;";
+html += "clip-path:polygon(50% 0%,100% 100%,0% 100%);";
+html += "text-align:center;";
+html += "'>";
+
+html += "Clip";
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "padding:16px 5px;";
+html += "background:#0891b2;";
+html += "filter:drop-shadow(5px 5px 3px rgba(0,0,0,0.8));";
+html += "text-align:center;";
+html += "'>";
+
+html += "Filter";
+
+html += "</div>";
+
+
+html += "<div style='";
+html += "padding:16px 5px;";
+html += "background:rgba(255,255,255,0.15);";
+html += "backdrop-filter:blur(8px);";
+html += "text-shadow:3px 3px 2px #000000;";
+html += "text-align:center;";
+html += "'>";
+
+html += "Blur";
+
+html += "</div>";
+
+
+html += "</div>";
+
+
+// ---------------------------------------------------------
+// 7. INLINE SVG
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "7. Inline SVG markup";
+
+html += "</div>";
+
+
+html += "<svg ";
+html += "xmlns='http://www.w3.org/2000/svg' ";
+html += "viewBox='0 0 520 100' ";
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:100px;";
+html += "margin-bottom:15px;";
+html += "background:#0f172a;";
+html += "border:2px solid #f59e0b;";
+html += "border-radius:9px;";
+html += "'>";
+
+
+html += "<rect ";
+html += "x='10' y='10' ";
+html += "width='500' height='80' ";
+html += "rx='14' ";
+html += "fill='#f59e0b'>";
+
+html += "</rect>";
+
+
+html += "<circle ";
+html += "cx='55' cy='50' r='25' ";
+html += "fill='#111827'>";
+
+html += "</circle>";
+
+
+html += "<text ";
+html += "x='95' y='59' ";
+html += "font-family='Arial' ";
+html += "font-size='23' ";
+html += "font-weight='bold' ";
+html += "fill='#111827'>";
+
+html += "INLINE SVG WORKED";
+
+html += "</text>";
+
+
+html += "</svg>";
+
+
+// ---------------------------------------------------------
+// 8. SVG AS BASE64 DATA URI
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "8. SVG image using a data URI";
+
+html += "</div>";
+
+
+html += "<img ";
+
+html += "src='data:image/svg+xml;base64,";
+
+html += "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MjAiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCA1MjAgOTAiPgo8ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB4Mj0iMSI+PHN0b3Agc3RvcC1jb2xvcj0iIzBlYTVlOSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhiNWNmNiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPgo8cmVjdCB3aWR0aD0iNTIwIiBoZWlnaHQ9IjkwIiByeD0iMTYiIGZpbGw9InVybCgjZykiLz4KPGNpcmNsZSBjeD0iNDgiIGN5PSI0NSIgcj0iMjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjkiLz4KPHBhdGggZD0iTTM4IDQ1aDIwTTQ4IDM1djIwIiBzdHJva2U9IiMxMTE4MjciIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjx0ZXh0IHg9IjkwIiB5PSI1NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSJ3aGl0ZSI+REFUQS1VUkkgU1ZHIElNQUdFIFdPUktFRDwvdGV4dD4KPC9zdmc+";
+
+html += "' ";
+
+html += "style='";
+html += "display:block;";
+html += "box-sizing:border-box;";
+html += "width:100%;";
+html += "min-height:90px;";
+html += "margin-bottom:15px;";
+html += "border:2px solid #8b5cf6;";
+html += "border-radius:9px;";
+html += "background:#e5e7eb;";
+html += "'>";
+
+
+
+
+// ---------------------------------------------------------
+// 9. CANVAS FALLBACK
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "font-size:15px;";
+html += "font-weight:bold;";
+html += "margin-bottom:8px;";
+html += "'>";
+
+html += "9. Canvas element";
+
+html += "</div>";
+
+
+html += "<canvas ";
+html += "width='520' ";
+html += "height='80' ";
+html += "style='";
+html += "display:block;";
+html += "width:100%;";
+html += "height:80px;";
+html += "margin-bottom:15px;";
+html += "background:#334155;";
+html += "border:2px solid #94a3b8;";
+html += "border-radius:8px;";
+html += "'>";
+
+html += "Canvas fallback text";
+
+html += "</canvas>";
+
+
+// ---------------------------------------------------------
+// Result reminder
+// ---------------------------------------------------------
+
+html += "<div style='";
+html += "padding:10px;";
+html += "background:#020617;";
+html += "border:1px solid #334155;";
+html += "border-radius:7px;";
+html += "font-size:11px;";
+html += "line-height:1.5;";
+html += "color:#cbd5e1;";
+html += "'>";
+
+html += "<strong style='color:#ffffff;'>Check:</strong> ";
+html += "iframe contents, editable controls, expanding details, ";
+html += "animation, hover movement, SVG graphics, data-URI image ";
+html += "and canvas behaviour.";
+
+html += "</div>";
+
+
+html += "</div>";
+
+
+return {
+    type: "text",
+    text: html
+};
