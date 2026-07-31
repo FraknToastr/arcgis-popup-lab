@@ -1,0 +1,6 @@
+{
+  "lab": 6,
+  "build": "006",
+  "purpose": "Same-origin fetch and Cache API test",
+  "expected": "This JSON should be returned from the same GitHub Pages origin."
+}

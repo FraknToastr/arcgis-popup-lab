@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>ArcGIS Pro Popup Lab 6</title>
+  <style>
+    :root {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #f8fafc;
+      background: #0f172a;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 280px;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(14, 165, 233, .18), transparent 34rem),
+        #0f172a;
+    }
+
+    button, input, textarea, select { font: inherit; }
+
+    button {
+      padding: .65rem .85rem;
+      border: 0;
+      border-radius: .55rem;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(1.12); }
+    button.secondary { background: #475569; }
+    button.danger { background: #b91c1c; }
+
+    input, textarea, select {
+      width: 100%;
+      padding: .65rem .75rem;
+      border: 2px solid #64748b;
+      border-radius: .55rem;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    textarea { min-height: 7rem; resize: vertical; }
+
+    code, pre { font-family: Consolas, "Courier New", monospace; }
+
+    .app {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      padding: .9rem;
+    }
+
+    .build {
+      padding: .65rem .8rem;
+      border-radius: .55rem;
+      background: #0e7490;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
+    h1 { margin: 1rem 0 .25rem; font-size: clamp(1.65rem, 5vw, 2.35rem); }
+    .subtitle { margin: 0 0 1.2rem; color: #7dd3fc; }
+
+    .section { margin-top: 1.15rem; }
+    .section > h2 { margin: 0 0 .55rem; font-size: 1rem; }
+
+    .panel {
+      padding: .85rem;
+      border: 1px solid #475569;
+      border-radius: .75rem;
+      background: rgba(30, 41, 59, .94);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: .7rem;
+    }
+
+    .status {
+      min-height: 2.6rem;
+      padding: .65rem .75rem;
+      border-radius: .55rem;
+      background: #020617;
+      border: 1px solid #334155;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .status.good { border-color: #22c55e; background: #052e1b; }
+    .status.warn { border-color: #f59e0b; background: #422006; }
+    .status.bad { border-color: #ef4444; background: #450a0a; }
+
+    .label { margin: .7rem 0 .3rem; font-size: .82rem; color: #cbd5e1; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(8rem, 35%) 1fr;
+      gap: .4rem .7rem;
+      margin: 0;
+    }
+
+    .kv dt { color: #93c5fd; font-weight: 700; }
+    .kv dd { margin: 0; overflow-wrap: anywhere; }
+
+    .feature-key {
+      padding: .65rem;
+      border-radius: .55rem;
+      background: #312e81;
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .counter {
+      display: inline-grid;
+      place-items: center;
+      min-width: 3rem;
+      min-height: 3rem;
+      margin-right: .55rem;
+      border-radius: 999px;
+      background: #7c3aed;
+      font-size: 1.15rem;
+      font-weight: 800;
+      vertical-align: middle;
+    }
+
+    .result-json {
+      max-height: 16rem;
+      overflow: auto;
+      margin: .65rem 0 0;
+      padding: .7rem;
+      border-radius: .55rem;
+      background: #020617;
+      border: 1px solid #334155;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: .78rem;
+    }
+
+    .checklist label {
+      display: block;
+      padding: .35rem 0;
+    }
+
+    .checklist input { width: auto; margin-right: .45rem; }
+
+    .small { font-size: .78rem; color: #cbd5e1; line-height: 1.45; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 500px) {
+      .app { padding: .55rem; }
+      .kv { grid-template-columns: 1fr; }
+      .kv dd { padding-bottom: .35rem; }
+      button { width: 100%; }
+      .actions { display: grid; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="build">POPUP LAB — BUILD 006</div>
+    <h1>Hosted-origin persistence laboratory</h1>
+    <p class="subtitle">GitHub Pages, browser storage, downloads, clipboard, service workers and ArcGIS REST queries</p>
+
+    <section class="section">
+      <h2>1. Hosted document and popup parameters</h2>
+      <div class="panel">
+        <dl class="kv" id="environment"></dl>
+        <div class="label">Feature storage key</div>
+        <div class="feature-key" id="featureKey"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. localStorage — persistent per-feature state</h2>
+      <div class="panel">
+        <div><span class="counter" id="openCount">0</span> hosted-app opens recorded for this feature</div>
+        <div class="label" for="localNote">Feature note</div>
+        <textarea id="localNote" placeholder="Enter a note, save it, close the popup, restart ArcGIS Pro, and return to this feature."></textarea>
+        <div class="actions">
+          <button id="saveLocal">Save localStorage</button>
+          <button class="secondary" id="loadLocal">Reload localStorage</button>
+          <button class="danger" id="clearLocal">Clear feature state</button>
+        </div>
+        <div class="status" id="localStatus">Not tested.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. IndexedDB — structured persistent state</h2>
+      <div class="panel">
+        <div class="label" for="dbNote">IndexedDB note</div>
+        <textarea id="dbNote" placeholder="Save a different note here."></textarea>
+        <div class="actions">
+          <button id="saveDb">Save IndexedDB</button>
+          <button class="secondary" id="loadDb">Reload IndexedDB</button>
+          <button class="danger" id="deleteDb">Delete IndexedDB record</button>
+        </div>
+        <div class="status" id="dbStatus">Opening database…</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. Session storage, cookies and storage quota</h2>
+      <div class="grid">
+        <div class="panel">
+          <div class="label">sessionStorage</div>
+          <div class="status" id="sessionStatus"></div>
+        </div>
+        <div class="panel">
+          <div class="label">Document cookie</div>
+          <div class="status" id="cookieStatus"></div>
+        </div>
+        <div class="panel">
+          <div class="label">Storage estimate and persistence</div>
+          <div class="status" id="quotaStatus">Checking…</div>
+          <div class="actions">
+            <button id="requestPersistence">Request persistent storage</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. Same-origin network and service worker</h2>
+      <div class="grid">
+        <div class="panel">
+          <div class="label">Fetch lab6-data.json from the same GitHub Pages origin</div>
+          <div class="actions">
+            <button id="sameOriginFetch">Run same-origin fetch</button>
+          </div>
+          <div class="status" id="fetchStatus">Not tested.</div>
+        </div>
+        <div class="panel">
+          <div class="label">Service worker</div>
+          <div class="status" id="swStatus">Checking…</div>
+          <div class="actions">
+            <button id="cacheTest">Test Cache API</button>
+          </div>
+          <div class="status" id="cacheStatus">Not tested.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. Downloads from the hosted iframe</h2>
+      <div class="panel">
+        <div class="actions">
+          <button id="blobDownload">Download Blob file</button>
+          <button class="secondary" id="dataDownload">Download data-URI file</button>
+        </div>
+        <div class="status" id="downloadStatus">Not tested.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. Clipboard and secure-context APIs</h2>
+      <div class="panel">
+        <div class="label" for="clipboardText">Clipboard text</div>
+        <input id="clipboardText" value="ArcGIS Pro Popup Lab 6 clipboard test">
+        <div class="actions">
+          <button id="copyClipboard">Write clipboard</button>
+          <button class="secondary" id="readClipboard">Read clipboard</button>
+        </div>
+        <div class="status" id="clipboardStatus">Not tested.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>8. ArcGIS REST query from the hosted iframe</h2>
+      <div class="panel">
+        <div class="label" for="serviceUrl">Feature layer URL</div>
+        <input id="serviceUrl" value="https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Santa_Monica_public_parcels/FeatureServer/0">
+        <div class="label" for="whereClause">Where clause</div>
+        <input id="whereClause" value="1=1">
+        <div class="actions">
+          <button id="queryService">Query one public feature</button>
+          <button class="secondary" id="queryOid">Query popup OBJECTID</button>
+        </div>
+        <div class="status" id="arcgisStatus">No request sent.</div>
+        <pre class="result-json" id="arcgisResult">Results appear here.</pre>
+        <p class="small">This lab performs read-only queries. Do not place ArcGIS tokens, passwords or secrets in this static page, its source code or popup URL.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>9. Iframe boundary and cross-window messaging</h2>
+      <div class="panel">
+        <dl class="kv" id="frameInfo"></dl>
+        <div class="actions">
+          <button id="postMessage">Send postMessage to parent</button>
+        </div>
+        <div class="status" id="messageStatus">No message sent.</div>
+        <p class="small">The Arcade parent has no JavaScript listener. This confirms only whether the hosted app can call the messaging API without an immediate exception.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>10. Multi-popup same-origin communication</h2>
+      <div class="panel">
+        <div class="actions">
+          <button id="broadcast">Broadcast from this popup</button>
+        </div>
+        <div class="status" id="broadcastStatus">Open the hosted page in a second popup or browser tab, then broadcast.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>11. Manual persistence protocol</h2>
+      <div class="panel checklist">
+        <label><input type="checkbox"> Save distinct localStorage and IndexedDB notes.</label>
+        <label><input type="checkbox"> Close and reopen this feature popup.</label>
+        <label><input type="checkbox"> Open another feature and return.</label>
+        <label><input type="checkbox"> Toggle the layer off and on.</label>
+        <label><input type="checkbox"> Save the project, close ArcGIS Pro, restart and return.</label>
+        <label><input type="checkbox"> Confirm whether notes and open count survived.</label>
+        <label><input type="checkbox"> Test Blob and data-URI downloads.</label>
+        <label><input type="checkbox"> Test same-origin fetch, service worker and Cache API.</label>
+        <label><input type="checkbox"> Test the public ArcGIS REST query.</label>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+
+    const popup = Object.freeze({
+      oid: params.get("oid") || "unknown",
+      globalid: params.get("globalid") || "",
+      layer: params.get("layer") || "unnamed-layer",
+      source: params.get("source") || "ArcGIS-Pro",
+      service: params.get("service") || ""
+    });
+
+    if (popup.service) $("serviceUrl").value = popup.service;
+
+    const featureIdentity = popup.globalid || `oid-${popup.oid}`;
+    const featureKey = `popup-lab-6:${popup.layer}:${featureIdentity}`;
+    const localKey = `${featureKey}:local`;
+    const openKey = `${featureKey}:open-count`;
+
+    function setStatus(id, message, kind = "") {
+      const node = $(id);
+      node.textContent = message;
+      node.className = `status${kind ? ` ${kind}` : ""}`;
+    }
+
+    function formatBytes(value) {
+      if (!Number.isFinite(value)) return "unknown";
+      const units = ["B", "KB", "MB", "GB"];
+      let n = value;
+      let unit = 0;
+      while (n >= 1024 && unit < units.length - 1) {
+        n /= 1024;
+        unit += 1;
+      }
+      return `${n.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+    }
+
+    function renderEnvironment() {
+      const values = [
+        ["Origin", location.origin],
+        ["Protocol", location.protocol],
+        ["Secure context", String(window.isSecureContext)],
+        ["Inside iframe", String(window.parent !== window)],
+        ["OBJECTID", popup.oid],
+        ["GlobalID", popup.globalid || "not supplied"],
+        ["Layer", popup.layer],
+        ["Source", popup.source]
+      ];
+      $("environment").innerHTML = values
+        .map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`)
+        .join("");
+      $("featureKey").textContent = featureKey;
+
+      const frameValues = [
+        ["document.referrer", document.referrer || "empty"],
+        ["window.name", window.name || "empty"],
+        ["History length", String(history.length)],
+        ["Top access", canAccessTop()]
+      ];
+      $("frameInfo").innerHTML = frameValues
+        .map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`)
+        .join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function canAccessTop() {
+      try {
+        void window.top.location.href;
+        return "allowed";
+      } catch (error) {
+        return `blocked: ${error.name}`;
+      }
+    }
+
+    function initialiseLocalStorage() {
+      try {
+        const nextCount = Number(localStorage.getItem(openKey) || 0) + 1;
+        localStorage.setItem(openKey, String(nextCount));
+        $("openCount").textContent = String(nextCount);
+        loadLocal();
+      } catch (error) {
+        setStatus("localStatus", `localStorage blocked: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function saveLocal() {
+      try {
+        const record = {
+          note: $("localNote").value,
+          savedAt: new Date().toISOString(),
+          featureKey
+        };
+        localStorage.setItem(localKey, JSON.stringify(record));
+        setStatus("localStatus", `Saved ${record.savedAt}\n${localKey}`, "good");
+      } catch (error) {
+        setStatus("localStatus", `Save failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(localKey);
+        if (!raw) {
+          setStatus("localStatus", `No saved record for ${localKey}`, "warn");
+          return;
+        }
+        const record = JSON.parse(raw);
+        $("localNote").value = record.note || "";
+        setStatus("localStatus", `Loaded saved record from ${record.savedAt || "unknown time"}.`, "good");
+      } catch (error) {
+        setStatus("localStatus", `Load failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function clearLocal() {
+      try {
+        localStorage.removeItem(localKey);
+        localStorage.removeItem(openKey);
+        $("localNote").value = "";
+        $("openCount").textContent = "0";
+        setStatus("localStatus", "Feature-specific localStorage cleared.", "good");
+      } catch (error) {
+        setStatus("localStatus", `Clear failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    let databasePromise;
+
+    function openDatabase() {
+      if (!databasePromise) {
+        databasePromise = new Promise((resolve, reject) => {
+          const request = indexedDB.open("arcgis-popup-lab-6", 1);
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains("featureNotes")) {
+              db.createObjectStore("featureNotes", { keyPath: "key" });
+            }
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error("IndexedDB open failed"));
+          request.onblocked = () => reject(new Error("IndexedDB upgrade blocked"));
+        });
+      }
+      return databasePromise;
+    }
+
+    async function saveDb() {
+      try {
+        const db = await openDatabase();
+        const record = {
+          key: featureKey,
+          note: $("dbNote").value,
+          savedAt: new Date().toISOString(),
+          oid: popup.oid,
+          globalid: popup.globalid,
+          layer: popup.layer
+        };
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("featureNotes", "readwrite");
+          tx.objectStore("featureNotes").put(record);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error || new Error("IndexedDB transaction failed"));
+          tx.onabort = () => reject(tx.error || new Error("IndexedDB transaction aborted"));
+        });
+        setStatus("dbStatus", `Saved IndexedDB record ${record.savedAt}.`, "good");
+      } catch (error) {
+        setStatus("dbStatus", `IndexedDB save failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function loadDb() {
+      try {
+        const db = await openDatabase();
+        const record = await new Promise((resolve, reject) => {
+          const tx = db.transaction("featureNotes", "readonly");
+          const request = tx.objectStore("featureNotes").get(featureKey);
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error || new Error("IndexedDB read failed"));
+        });
+        if (!record) {
+          setStatus("dbStatus", `No IndexedDB record for ${featureKey}.`, "warn");
+          return;
+        }
+        $("dbNote").value = record.note || "";
+        setStatus("dbStatus", `Loaded IndexedDB record saved ${record.savedAt}.`, "good");
+      } catch (error) {
+        setStatus("dbStatus", `IndexedDB load failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function deleteDb() {
+      try {
+        const db = await openDatabase();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction("featureNotes", "readwrite");
+          tx.objectStore("featureNotes").delete(featureKey);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error || new Error("IndexedDB delete failed"));
+        });
+        $("dbNote").value = "";
+        setStatus("dbStatus", "IndexedDB record deleted.", "good");
+      } catch (error) {
+        setStatus("dbStatus", `IndexedDB delete failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function initialiseSessionStorage() {
+      try {
+        const key = `${featureKey}:session-opens`;
+        const count = Number(sessionStorage.getItem(key) || 0) + 1;
+        sessionStorage.setItem(key, String(count));
+        setStatus("sessionStatus", `Session open count: ${count}\nKey: ${key}`, "good");
+      } catch (error) {
+        setStatus("sessionStatus", `sessionStorage blocked: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function initialiseCookie() {
+      try {
+        const cookieName = "popup_lab_6_cookie";
+        document.cookie = `${cookieName}=available; path=/; max-age=86400; SameSite=Lax; Secure`;
+        const found = document.cookie.split("; ").some((entry) => entry.startsWith(`${cookieName}=`));
+        setStatus(
+          "cookieStatus",
+          found ? `Cookie written and read.\n${document.cookie}` : "Cookie was not visible after writing.",
+          found ? "good" : "warn"
+        );
+      } catch (error) {
+        setStatus("cookieStatus", `Cookie test failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function updateQuota() {
+      try {
+        if (!navigator.storage?.estimate) {
+          setStatus("quotaStatus", "navigator.storage.estimate is unavailable.", "warn");
+          return;
+        }
+        const estimate = await navigator.storage.estimate();
+        const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+        setStatus(
+          "quotaStatus",
+          `Usage: ${formatBytes(estimate.usage)}\nQuota: ${formatBytes(estimate.quota)}\nPersistent grant: ${persisted}`,
+          "good"
+        );
+      } catch (error) {
+        setStatus("quotaStatus", `Storage estimate failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function requestPersistence() {
+      try {
+        if (!navigator.storage?.persist) {
+          setStatus("quotaStatus", "navigator.storage.persist is unavailable.", "warn");
+          return;
+        }
+        const granted = await navigator.storage.persist();
+        await updateQuota();
+        setStatus("quotaStatus", `${$("quotaStatus").textContent}\nPersistence request result: ${granted}`, granted ? "good" : "warn");
+      } catch (error) {
+        setStatus("quotaStatus", `Persistence request failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function sameOriginFetch() {
+      try {
+        const response = await fetch(`lab6-data.json?cacheBust=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        setStatus("fetchStatus", `Same-origin fetch succeeded.\n${JSON.stringify(json)}`, "good");
+      } catch (error) {
+        setStatus("fetchStatus", `Same-origin fetch failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function initialiseServiceWorker() {
+      if (!("serviceWorker" in navigator)) {
+        setStatus("swStatus", "Service workers are unavailable.", "warn");
+        return;
+      }
+      try {
+        const registration = await navigator.serviceWorker.register("sw.js");
+        await navigator.serviceWorker.ready;
+        setStatus("swStatus", `Registered. Scope: ${registration.scope}`, "good");
+      } catch (error) {
+        setStatus("swStatus", `Registration failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function cacheTest() {
+      if (!("caches" in window)) {
+        setStatus("cacheStatus", "Cache API unavailable.", "warn");
+        return;
+      }
+      try {
+        const cache = await caches.open("popup-lab-6-manual");
+        await cache.add("lab6-data.json");
+        const response = await cache.match("lab6-data.json");
+        const json = response ? await response.json() : null;
+        setStatus("cacheStatus", `Cache write/read succeeded.\n${JSON.stringify(json)}`, "good");
+      } catch (error) {
+        setStatus("cacheStatus", `Cache test failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function triggerDownload(href, filename) {
+      const anchor = document.createElement("a");
+      anchor.href = href;
+      anchor.download = filename;
+      anchor.rel = "noopener";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+
+    function blobDownload() {
+      try {
+        const content = [
+          "ArcGIS Pro Popup Lab 6",
+          `Feature key: ${featureKey}`,
+          `Generated: ${new Date().toISOString()}`
+        ].join("\n");
+        const url = URL.createObjectURL(new Blob([content], { type: "text/plain;charset=utf-8" }));
+        triggerDownload(url, `popup-lab-6-${popup.oid}.txt`);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        setStatus("downloadStatus", "Blob download was triggered.", "good");
+      } catch (error) {
+        setStatus("downloadStatus", `Blob download failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function dataDownload() {
+      try {
+        const content = encodeURIComponent(`Popup Lab 6 data URI\nFeature key: ${featureKey}`);
+        triggerDownload(`data:text/plain;charset=utf-8,${content}`, `popup-lab-6-data-${popup.oid}.txt`);
+        setStatus("downloadStatus", "Data-URI download was triggered.", "good");
+      } catch (error) {
+        setStatus("downloadStatus", `Data-URI download failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function copyClipboard() {
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("Clipboard write API unavailable");
+        await navigator.clipboard.writeText($("clipboardText").value);
+        setStatus("clipboardStatus", "Clipboard write succeeded.", "good");
+      } catch (error) {
+        setStatus("clipboardStatus", `Clipboard write failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    async function readClipboard() {
+      try {
+        if (!navigator.clipboard?.readText) throw new Error("Clipboard read API unavailable");
+        const text = await navigator.clipboard.readText();
+        $("clipboardText").value = text;
+        setStatus("clipboardStatus", `Clipboard read succeeded: ${text}`, "good");
+      } catch (error) {
+        setStatus("clipboardStatus", `Clipboard read failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    function normaliseLayerUrl(value) {
+      return value.trim().replace(/\/+$/, "");
+    }
+
+    async function queryArcgis(usePopupOid) {
+      const baseUrl = normaliseLayerUrl($("serviceUrl").value);
+      if (!/^https:\/\//i.test(baseUrl)) {
+        setStatus("arcgisStatus", "Use an absolute HTTPS feature-layer URL.", "bad");
+        return;
+      }
+
+      const where = usePopupOid && popup.oid !== "unknown"
+        ? `OBJECTID=${Number(popup.oid)}`
+        : $("whereClause").value.trim() || "1=1";
+
+      const query = new URLSearchParams({
+        f: "json",
+        where,
+        outFields: "*",
+        returnGeometry: "false",
+        resultRecordCount: "1"
+      });
+
+      const url = `${baseUrl}/query?${query.toString()}`;
+      setStatus("arcgisStatus", `Requesting ${url}`, "");
+      $("arcgisResult").textContent = "Loading…";
+
+      try {
+        const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+        const text = await response.text();
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = { rawText: text };
+        }
+        if (!response.ok || payload.error) {
+          throw new Error(`HTTP ${response.status}: ${JSON.stringify(payload.error || payload)}`);
+        }
+        setStatus("arcgisStatus", `ArcGIS REST query succeeded. HTTP ${response.status}.`, "good");
+        $("arcgisResult").textContent = JSON.stringify(payload, null, 2);
+      } catch (error) {
+        setStatus("arcgisStatus", `ArcGIS REST query failed: ${error.name}: ${error.message}`, "bad");
+        $("arcgisResult").textContent = "The failure may be service permissions, CORS, network filtering, an invalid layer URL, or an OBJECTID field mismatch.";
+      }
+    }
+
+    function postMessageToParent() {
+      try {
+        window.parent.postMessage(
+          {
+            type: "arcgis-popup-lab-6",
+            action: "test-message",
+            featureKey,
+            sentAt: new Date().toISOString()
+          },
+          "*"
+        );
+        setStatus("messageStatus", "postMessage call completed. No parent acknowledgement is expected.", "good");
+      } catch (error) {
+        setStatus("messageStatus", `postMessage failed: ${error.name}: ${error.message}`, "bad");
+      }
+    }
+
+    let channel = null;
+
+    function initialiseBroadcastChannel() {
+      if (!("BroadcastChannel" in window)) {
+        setStatus("broadcastStatus", "BroadcastChannel is unavailable.", "warn");
+        return;
+      }
+      channel = new BroadcastChannel("arcgis-popup-lab-6");
+      channel.onmessage = (event) => {
+        setStatus("broadcastStatus", `Received broadcast:\n${JSON.stringify(event.data)}`, "good");
+      };
+      setStatus("broadcastStatus", "BroadcastChannel ready. Open a second instance to test.", "good");
+    }
+
+    function broadcast() {
+      if (!channel) {
+        setStatus("broadcastStatus", "BroadcastChannel is unavailable or not initialised.", "warn");
+        return;
+      }
+      const message = { featureKey, sentAt: new Date().toISOString() };
+      channel.postMessage(message);
+      setStatus("broadcastStatus", `Broadcast sent:\n${JSON.stringify(message)}`, "good");
+    }
+
+    function bindEvents() {
+      $("saveLocal").addEventListener("click", saveLocal);
+      $("loadLocal").addEventListener("click", loadLocal);
+      $("clearLocal").addEventListener("click", clearLocal);
+      $("saveDb").addEventListener("click", saveDb);
+      $("loadDb").addEventListener("click", loadDb);
+      $("deleteDb").addEventListener("click", deleteDb);
+      $("requestPersistence").addEventListener("click", requestPersistence);
+      $("sameOriginFetch").addEventListener("click", sameOriginFetch);
+      $("cacheTest").addEventListener("click", cacheTest);
+      $("blobDownload").addEventListener("click", blobDownload);
+      $("dataDownload").addEventListener("click", dataDownload);
+      $("copyClipboard").addEventListener("click", copyClipboard);
+      $("readClipboard").addEventListener("click", readClipboard);
+      $("queryService").addEventListener("click", () => queryArcgis(false));
+      $("queryOid").addEventListener("click", () => queryArcgis(true));
+      $("postMessage").addEventListener("click", postMessageToParent);
+      $("broadcast").addEventListener("click", broadcast);
+    }
+
+    async function initialise() {
+      bindEvents();
+      renderEnvironment();
+      initialiseLocalStorage();
+      initialiseSessionStorage();
+      initialiseCookie();
+      initialiseBroadcastChannel();
+      await Promise.allSettled([
+        loadDb(),
+        updateQuota(),
+        initialiseServiceWorker()
+      ]);
+      window.parent.postMessage(
+        { type: "arcgis-popup-lab-6", action: "ready", featureKey },
+        "*"
+      );
+    }
+
+    initialise();
+  </script>
+</body>
+</html>
