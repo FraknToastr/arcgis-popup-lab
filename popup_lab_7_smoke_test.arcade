@@ -1,4 +1,0 @@
-return {
-    type: "text",
-    text: "<div style='padding:18px;background:#052e1b;color:#ffffff;border:3px solid #22c55e;border-radius:10px;font-weight:bold;'>LAB 7 ARCADE ELEMENT IS VALID</div>"
-};
