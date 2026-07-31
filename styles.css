@@ -1,0 +1,184 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #f8fafc;
+  background: #0f172a;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 300px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(34, 197, 94, .16), transparent 34rem),
+    radial-gradient(circle at 100% 25%, rgba(59, 130, 246, .14), transparent 30rem),
+    #0f172a;
+}
+
+button, input, textarea, select { font: inherit; }
+
+button {
+  padding: .68rem .9rem;
+  border: 0;
+  border-radius: .55rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) { filter: brightness(1.13); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.secondary { background: #475569; }
+button.good { background: #15803d; }
+button.warn { background: #b45309; }
+button.danger { background: #b91c1c; }
+
+input, textarea, select {
+  width: 100%;
+  padding: .66rem .75rem;
+  border: 2px solid #64748b;
+  border-radius: .55rem;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+input[type="checkbox"] { width: auto; }
+textarea { min-height: 6rem; resize: vertical; }
+code, pre { font-family: Consolas, "Courier New", monospace; }
+
+.app {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  padding: .9rem;
+}
+
+.build {
+  padding: .68rem .82rem;
+  border-radius: .55rem;
+  background: #15803d;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+h1 { margin: 1rem 0 .25rem; font-size: clamp(1.65rem, 5vw, 2.35rem); }
+.subtitle { margin: 0 0 1.2rem; color: #86efac; }
+
+.section { margin-top: 1.15rem; }
+.section > h2 { margin: 0 0 .55rem; font-size: 1rem; }
+
+.panel {
+  padding: .9rem;
+  border: 1px solid #475569;
+  border-radius: .78rem;
+  background: rgba(30, 41, 59, .95);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+  gap: .72rem;
+}
+
+.status {
+  min-height: 2.7rem;
+  padding: .68rem .76rem;
+  margin-top: .65rem;
+  border-radius: .55rem;
+  background: #020617;
+  border: 1px solid #334155;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.status.good { border-color: #22c55e; background: #052e1b; }
+.status.warn { border-color: #f59e0b; background: #422006; }
+.status.bad { border-color: #ef4444; background: #450a0a; }
+.status.info { border-color: #38bdf8; background: #082f49; }
+
+.label { margin: .72rem 0 .3rem; font-size: .82rem; color: #cbd5e1; }
+.actions { display: flex; flex-wrap: wrap; gap: .52rem; margin-top: .68rem; }
+
+.kv {
+  display: grid;
+  grid-template-columns: minmax(9rem, 34%) 1fr;
+  gap: .42rem .72rem;
+  margin: 0;
+}
+.kv dt { color: #93c5fd; font-weight: 700; }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+
+.field-value {
+  min-height: 2.6rem;
+  padding: .66rem .75rem;
+  border-radius: .55rem;
+  background: #020617;
+  border: 1px solid #334155;
+  overflow-wrap: anywhere;
+}
+
+.warning {
+  padding: .78rem;
+  border: 2px solid #f59e0b;
+  border-radius: .62rem;
+  background: #422006;
+  line-height: 1.45;
+}
+
+.confirm-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  margin-top: .75rem;
+  padding: .7rem;
+  border-radius: .55rem;
+  background: #312e81;
+}
+.confirm-row input { margin-top: .2rem; }
+
+.badge {
+  display: inline-block;
+  padding: .24rem .5rem;
+  border-radius: 999px;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: .74rem;
+  font-weight: 700;
+}
+.badge.good { background: #166534; }
+.badge.warn { background: #92400e; }
+.badge.bad { background: #991b1b; }
+
+.result-json {
+  max-height: 20rem;
+  overflow: auto;
+  margin: .7rem 0 0;
+  padding: .72rem;
+  border-radius: .55rem;
+  background: #020617;
+  border: 1px solid #334155;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: .78rem;
+}
+
+.step-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+.step-list li + li { margin-top: .25rem; }
+
+.small { font-size: .78rem; color: #cbd5e1; line-height: 1.45; }
+.hidden { display: none !important; }
+
+@media (max-width: 560px) {
+  .app { padding: .55rem; }
+  .kv { grid-template-columns: 1fr; }
+  .kv dd { padding-bottom: .35rem; }
+  .actions { display: grid; grid-template-columns: 1fr; }
+  button { width: 100%; }
+}

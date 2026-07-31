@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArcGIS OAuth callback</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app" style="max-width:720px">
+    <div class="build">POPUP LAB — OAUTH CALLBACK</div>
+    <h1>Completing ArcGIS sign-in</h1>
+    <p class="subtitle">Authorization-code exchange with PKCE</p>
+    <div class="panel">
+      <div class="status info" id="callbackStatus">Reading the OAuth response…</div>
+      <p class="small">
+        No client secret is used. The access token is transferred back to the Lab 7 application and retained only for the current hosted-app session.
+      </p>
+    </div>
+  </main>
+  <script src="callback.js"></script>
+</body>
+</html>
