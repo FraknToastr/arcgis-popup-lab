@@ -1,9 +1,9 @@
-var APP_URL = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
-var CLIENT_ID = "YOUR_CLIENT_ID";
+var APP_URL = "https://frakntoastr.github.io/arcgis-popup-lab-6/";
+var CLIENT_ID = "2i8ErWnjyQES93El";
 var PORTAL_URL = "https://www.arcgis.com";
-var SERVICE_URL = "https://YOUR-FEATURE-SERVICE/FeatureServer/0";
+var SERVICE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/City_Plan_Shape/FeatureServer/0";
 
-var oid = Text($feature.OBJECTID);
+var oid = Text($feature.FID);
 var appSource = APP_URL + "?oid=" + oid + "&clientId=" + CLIENT_ID + "&portal=" + PORTAL_URL + "&service=" + SERVICE_URL + "&source=ArcGIS-Pro&build=007";
 
 var html = "";
