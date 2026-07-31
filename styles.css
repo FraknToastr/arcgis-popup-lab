@@ -35,6 +35,19 @@ button.good { background: #15803d; }
 button.warn { background: #b45309; }
 button.danger { background: #b91c1c; }
 
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .68rem .9rem;
+  border-radius: .55rem;
+  background: #15803d;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+.button-link:hover { filter: brightness(1.13); }
+
 input, textarea, select {
   width: 100%;
   padding: .66rem .75rem;
@@ -180,5 +193,5 @@ h1 { margin: 1rem 0 .25rem; font-size: clamp(1.65rem, 5vw, 2.35rem); }
   .kv { grid-template-columns: 1fr; }
   .kv dd { padding-bottom: .35rem; }
   .actions { display: grid; grid-template-columns: 1fr; }
-  button { width: 100%; }
+  button, .button-link { width: 100%; }
 }

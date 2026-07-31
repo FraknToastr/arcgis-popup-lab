@@ -19,8 +19,7 @@
     editor: null,
     config: null,
     flags: {
-      popupAuth: false,
-      redirectAuth: false,
+      externalAuth: false,
       token: false,
       metadata: false,
       query: false,
@@ -122,7 +121,7 @@
     el("portalUrl").value = config.portalUrl;
     el("clientId").value = config.clientId;
     el("serviceUrl").value = config.serviceUrl;
-    el("redirectUri").textContent = new URL("oauth-callback.html", window.location.href).href;
+    el("redirectUri").textContent = "urn:ietf:wg:oauth:2.0:oob";
   }
 
   function saveConfig() {
@@ -159,7 +158,7 @@
       .replace(/=+$/, "");
   }
 
-  async function beginOAuth(mode) {
+  async function prepareExternalOAuth() {
     const config = currentConfigFromInputs();
     const problems = validateConfig(config);
     if (problems.length) {
@@ -173,16 +172,15 @@
     const verifier = randomString(72);
     const challenge = await pkceChallenge(verifier);
     const oauthState = randomString(48);
-    const redirectUri = new URL("oauth-callback.html", window.location.href).href;
+    const redirectUri = "urn:ietf:wg:oauth:2.0:oob";
 
     const transaction = {
-      mode,
+      mode: "external-oob",
       state: oauthState,
       verifier,
       clientId: config.clientId,
       portalUrl: config.portalUrl,
       redirectUri,
-      returnUrl: window.location.href,
       createdAt: Date.now()
     };
     localStorage.setItem(TX_KEY, JSON.stringify(transaction));
@@ -196,21 +194,109 @@
       code_challenge_method: "S256"
     });
     const authorizeUrl = `${config.portalUrl}/sharing/rest/oauth2/authorize?${authParams}`;
+    const link = el("externalAuthLink");
+    link.href = authorizeUrl;
+    link.classList.remove("hidden");
+    el("authCodeInput").value = "";
+    setStatus(
+      "authStatus",
+      "External sign-in is prepared. Click the green browser link, sign in, then copy the full approval-page URL from the browser address bar and paste it below.",
+      "info"
+    );
+  }
 
-    if (mode === "popup") {
-      const popup = window.open(
-        authorizeUrl,
-        "arcgisPopupLab7OAuth",
-        "height=650,width=900,resizable=yes,scrollbars=yes,status=yes"
-      );
-      if (!popup) {
-        setStatus("authStatus", "OAuth popup was blocked. Use the iframe redirect fallback.", "bad");
-        return;
+  function extractAuthorizationResult(rawValue) {
+    const raw = String(rawValue || "").trim();
+    if (!raw) throw new Error("Paste the ArcGIS approval-page URL or authorization code.");
+
+    let code = "";
+    let returnedState = "";
+
+    try {
+      const url = new URL(raw);
+      code = url.searchParams.get("code") || "";
+      returnedState = url.searchParams.get("state") || "";
+    } catch {
+      const codeMatch = raw.match(/(?:^|[?&#\s])code=([^&#\s]+)/i);
+      const stateMatch = raw.match(/(?:^|[?&#\s])state=([^&#\s]+)/i);
+      code = codeMatch ? decodeURIComponent(codeMatch[1]) : raw;
+      returnedState = stateMatch ? decodeURIComponent(stateMatch[1]) : "";
+    }
+
+    code = String(code || "").trim();
+    if (!code) throw new Error("No authorization code could be extracted from the pasted value.");
+    return { code, returnedState };
+  }
+
+  async function exchangeExternalCode(transaction, code) {
+    const tokenUrl = `${transaction.portalUrl}/sharing/rest/oauth2/token`;
+    const body = new URLSearchParams({
+      client_id: transaction.clientId,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: transaction.redirectUri,
+      code_verifier: transaction.verifier,
+      f: "json"
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body,
+      cache: "no-store"
+    });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      const message = data.error?.error_description || data.error?.message || `HTTP ${response.status}`;
+      throw new Error(message);
+    }
+    if (!data.access_token) throw new Error("The token response did not contain an access_token.");
+
+    return {
+      accessToken: data.access_token,
+      username: data.username || "",
+      expiresAt: Date.now() + (Number(data.expires_in || 0) * 1000),
+      receivedAt: Date.now(),
+      portalUrl: transaction.portalUrl,
+      clientId: transaction.clientId,
+      mode: "external-oob"
+    };
+  }
+
+  async function completeExternalOAuth() {
+    let transaction;
+    try {
+      transaction = JSON.parse(localStorage.getItem(TX_KEY) || "null");
+    } catch {
+      transaction = null;
+    }
+    if (!transaction || transaction.mode !== "external-oob") {
+      setStatus("authStatus", "No prepared external PKCE transaction exists. Start with step 1.", "bad");
+      return;
+    }
+    if (Date.now() - Number(transaction.createdAt || 0) > 15 * 60 * 1000) {
+      localStorage.removeItem(TX_KEY);
+      setStatus("authStatus", "The prepared sign-in is more than 15 minutes old. Prepare a new external sign-in.", "bad");
+      return;
+    }
+
+    try {
+      const { code, returnedState } = extractAuthorizationResult(el("authCodeInput").value);
+      if (returnedState && returnedState !== transaction.state) {
+        throw new Error("OAuth state validation failed. Prepare a new sign-in and try again.");
       }
-      setStatus("authStatus", "OAuth popup opened. Complete sign-in and return here.", "info");
-    } else {
-      setStatus("authStatus", "Redirecting this iframe to ArcGIS sign-in…", "info");
-      window.location.assign(authorizeUrl);
+      setStatus("authStatus", "Authorization code received. Exchanging it for an access token…", "info");
+      const packet = await exchangeExternalCode(transaction, code);
+      localStorage.removeItem(TX_KEY);
+      state.flags.externalAuth = true;
+      handleOAuthPacket(packet);
+      setStatus(
+        "authStatus",
+        `Authenticated as ${packet.username || "ArcGIS user"}. The external-browser PKCE flow completed successfully.`,
+        "good"
+      );
+    } catch (error) {
+      setStatus("authStatus", `External sign-in failed: ${error.message}`, "bad");
     }
   }
 
@@ -245,8 +331,7 @@
     state.token = packet;
     sessionStorage.setItem(TOKEN_KEY, JSON.stringify(packet));
     state.flags.token = true;
-    if (packet.mode === "popup") state.flags.popupAuth = true;
-    if (packet.mode === "redirect") state.flags.redirectAuth = true;
+    if (packet.mode === "external-oob") state.flags.externalAuth = true;
     renderAuthState();
     renderSummary();
   }
@@ -692,8 +777,7 @@
 
   function renderSummary() {
     const items = [
-      ["OAuth popup return", state.flags.popupAuth ? "PASS" : "PENDING", state.flags.popupAuth ? "Popup authorization returned to the embedded application." : "Use Sign in — popup test."],
-      ["OAuth redirect fallback", state.flags.redirectAuth ? "PASS" : "PENDING", state.flags.redirectAuth ? "In-frame redirect authorization returned successfully." : "Optional fallback test."],
+      ["External-browser OAuth", state.flags.externalAuth ? "PASS" : "PENDING", state.flags.externalAuth ? "Authorization code + PKCE completed through the ArcGIS out-of-band approval page." : "Prepare external sign-in, authenticate in the browser and paste the approval result."],
       ["Session token", state.flags.token ? "PASS" : "PENDING", state.flags.token ? "A PKCE access token is active in sessionStorage." : "No active session token."],
       ["Secured metadata", state.flags.metadata ? "PASS" : "PENDING", state.flags.metadata ? "Layer metadata was read with the OAuth token." : "Load the layer metadata."],
       ["Feature query", state.flags.query ? "PASS" : "PENDING", state.flags.query ? "The selected feature was read from the service." : "Query the selected feature."],
@@ -730,8 +814,8 @@
   function wireEvents() {
     el("saveConfig").addEventListener("click", saveConfig);
     el("clearConfig").addEventListener("click", clearConfig);
-    el("signInPopup").addEventListener("click", () => beginOAuth("popup"));
-    el("signInRedirect").addEventListener("click", () => beginOAuth("redirect"));
+    el("prepareExternal").addEventListener("click", prepareExternalOAuth);
+    el("completeExternal").addEventListener("click", completeExternalOAuth);
     el("signOut").addEventListener("click", signOut);
     el("loadMetadata").addEventListener("click", loadMetadata);
     el("queryFeature").addEventListener("click", queryFeatureButton);

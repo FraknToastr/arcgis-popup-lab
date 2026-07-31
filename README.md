@@ -1,88 +1,57 @@
-# ArcGIS Pro Popup Lab 7
+# ArcGIS Pro Popup Lab 7 v1.2
 
-Lab 7 tests whether a GitHub Pages application embedded in an ArcGIS Pro popup can:
+Lab 7 tests authenticated query and controlled editing from a GitHub Pages application embedded in an ArcGIS Pro popup.
 
-1. authenticate an ArcGIS user with OAuth 2.0 authorization code + PKCE;
-2. read a secured feature layer;
-3. update one controlled attribute;
-4. re-query the feature to verify the server value;
-5. restore the original value;
-6. determine whether ArcGIS Pro refreshes after the external edit.
+## Why v1.2 changed the sign-in flow
 
-## Safety rules
+ArcGIS Online's authorization page refuses to render inside the popup iframe. ArcGIS Pro's popup web context also does not provide a usable child OAuth window. The earlier popup and in-frame redirect paths are therefore removed.
 
-- Use a disposable test layer or a non-critical test record.
-- Test one ordinary text, number or date field only.
-- The application never changes geometry.
-- Do not put a client secret, password, access token or refresh token in GitHub, Arcade, config files or URLs.
-- The Client ID is public application configuration and is expected to be visible.
-- The app intentionally discards any refresh token returned by ArcGIS.
-- The active access token is retained only in `sessionStorage` for the hosted-app session.
+Version 1.2 uses ArcGIS's supported out-of-band redirect with authorization code + PKCE:
+
+1. the embedded app creates a PKCE verifier and authorization URL;
+2. the user opens ArcGIS sign-in in the normal browser;
+3. ArcGIS redirects to its `/oauth2/approval` page;
+4. the user copies the full approval-page URL from the browser address bar;
+5. the user pastes it into the embedded app;
+6. the embedded app extracts the short-lived code and exchanges it with the original PKCE verifier.
+
+No client secret, password or access token is placed in GitHub, Arcade or a URL.
 
 ## Package files
 
 - `index.html` — hosted Lab 7 application
 - `styles.css` — application styling
-- `app.js` — OAuth, query, update, verification and rollback logic
-- `oauth-callback.html` — registered OAuth callback page
-- `callback.js` — PKCE authorization-code exchange
+- `app.js` — external-browser PKCE, query, edit, verification and rollback logic
 - `config.js` — direct-browser fallback configuration
 - `.nojekyll` — prevents Jekyll processing
 - `popup_lab_7.arcade` — ArcGIS Pro popup expression
 - `popup_lab_7_smoke_test.arcade` — minimal validation expression
 - `LAB_7_RESULTS.md` — result-recording template
+- `PATCH_NOTES_v1.2.md` — change summary
 
-## 1. Prepare the test feature layer
+## 1. OAuth application configuration
 
-The target must be an ArcGIS Feature Service layer whose URL ends with:
+In the ArcGIS OAuth application's redirect URI list, add this exact value:
 
-`/FeatureServer/<layer id>`
+`urn:ietf:wg:oauth:2.0:oob`
 
-The signed-in test user must have permission to:
-
-- access the service;
-- query the layer;
-- update the selected record and field.
-
-Use the same service-backed layer in ArcGIS Pro so the popup `OBJECTID` matches the service record.
+Keep the GitHub callback URI only if another application still uses it; Lab 7 v1.2 does not need it.
 
 ## 2. Publish the hosted app
 
-1. Create a GitHub repository, for example `arcgis-popup-lab-7`.
-2. Upload these hosted files to the repository root:
-   - `index.html`
-   - `styles.css`
-   - `app.js`
-   - `oauth-callback.html`
-   - `callback.js`
-   - `config.js`
-   - `.nojekyll`
-3. In GitHub repository settings, enable Pages from the `main` branch and repository root.
-4. Wait for the HTTPS site, normally:
+Upload the hosted files to the GitHub Pages repository root, replacing the previous Lab 7 files:
 
-   `https://YOUR-GITHUB-USER.github.io/arcgis-popup-lab-7/`
+- `index.html`
+- `styles.css`
+- `app.js`
+- `config.js`
+- `.nojekyll`
 
-5. Open the site directly and verify that Build 007 loads.
+Delete or ignore the older `oauth-callback.html` and `callback.js`; they are not used by v1.2.
 
-## 3. Register the OAuth browser application
+## 3. Configure the Arcade expression
 
-Create or register an OAuth browser application in the ArcGIS Online organisation or ArcGIS Enterprise portal that secures the test service.
-
-Register this exact redirect URI:
-
-`https://YOUR-GITHUB-USER.github.io/arcgis-popup-lab-7/oauth-callback.html`
-
-Copy the resulting **Client ID**. Do not use the Client Secret.
-
-The OAuth app and the signed-in account must be permitted to access the target organisation and service.
-
-## 4. Configure the Arcade expression
-
-1. Add a new **Arcade popup element**.
-2. Paste `popup_lab_7_smoke_test.arcade` first and click **Verify**.
-3. Confirm that the green validation card appears.
-4. Replace the entire expression with `popup_lab_7.arcade`.
-5. Change only these four quoted values:
+Paste `popup_lab_7.arcade` into an Arcade popup element and configure:
 
 ```arcade
 var APP_URL = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
@@ -91,86 +60,34 @@ var PORTAL_URL = "https://www.arcgis.com";
 var SERVICE_URL = "https://YOUR-FEATURE-SERVICE/FeatureServer/0";
 ```
 
-For ArcGIS Enterprise, `PORTAL_URL` should be the portal root, for example:
+The expression detects the actual Object ID field using `Schema($feature).objectIdField`.
 
-`https://gis.example.gov.au/portal`
+## 4. Run external sign-in
 
-The v1.1 expression detects the Object ID field from `Schema($feature).objectIdField`, so layers whose Object ID is named `FID`, `OBJECTID`, or another valid name are supported automatically.
+1. Open a feature popup in ArcGIS Pro.
+2. Click **1. Prepare external sign-in**.
+3. Click **2. Open ArcGIS sign-in in browser**.
+4. Sign in and approve the application.
+5. On the ArcGIS approval page, press **Ctrl+L**, then **Ctrl+C** to copy the full URL from the address bar.
+6. Return to ArcGIS Pro and paste the URL into **Authorization result**.
+7. Click **3. Complete sign-in from pasted code**.
 
-## 4A. Confirm that Lab 7 is actually inside the ArcGIS Pro popup
+You may paste the raw authorization code instead of the full URL.
 
-When opened correctly from a feature popup, Section 1 must report:
+The prepared transaction expires after 15 minutes. Authorization codes are single-use.
 
-- `Source: ArcGIS-Pro`
-- `Inside iframe: true`
-- a numeric Object ID
-- the detected Object ID field name
+## 5. Continue the Lab 7 tests
 
-If it reports `Source: Direct browser` and `Inside iframe: false`, the GitHub page was opened directly and ArcGIS Pro did not supply feature context. Direct-browser testing is still possible in v1.1 by entering an Object ID manually in Section 4.
+1. Load secured layer metadata.
+2. Query the selected feature.
+3. Confirm the service advertises `Update` before attempting an edit.
+4. Use a disposable or non-critical record.
+5. Apply one attribute update, verify by re-query, then restore the original value.
 
-## 5. Run the OAuth tests
+## Known boundaries
 
-### Popup path
-
-1. Click **Sign in — popup test**.
-2. Complete the ArcGIS sign-in and consent screen.
-3. Confirm that the callback closes or reports success.
-4. Confirm that Lab 7 displays the authenticated username.
-
-A failure stating that the OAuth transaction is unavailable indicates that ArcGIS Pro opened the login in a separate browser profile. This is a useful boundary result, not a credential error.
-
-### Iframe redirect fallback
-
-If the popup path fails, click **Sign in — iframe redirect fallback**. This temporarily navigates the embedded application to ArcGIS sign-in, then returns through `oauth-callback.html`.
-
-## 6. Run the editing test
-
-1. Click **Load secured layer metadata**.
-2. Confirm that the layer advertises `Update` and that editable fields are listed.
-3. Click **Query this feature**.
-4. Select a non-critical editable field.
-5. Enter a clearly recognisable test value.
-6. Tick the explicit authorisation checkbox.
-7. Click **Apply update and verify**.
-8. Confirm that:
-   - `updateFeatures` reports success;
-   - the app re-queries the feature;
-   - the verified server value matches the proposed value.
-9. Close and reopen the ArcGIS Pro popup and inspect the native popup/layer value.
-10. Use **Revert to original value** and verify the original value is restored.
-
-## 7. Interpret common failures
-
-### OAuth redirect mismatch
-
-The registered redirect URI must exactly match the displayed callback URI, including HTTPS, repository path, filename and trailing path structure.
-
-### OAuth popup does not return
-
-ArcGIS Pro may have opened authentication in another browser context. Test the iframe redirect fallback.
-
-### CORS or failed fetch
-
-The feature service or portal may not allow the GitHub Pages origin, or a reverse proxy/web-tier authentication layer may reject the request headers.
-
-### Metadata loads but Update is unavailable
-
-The service does not advertise the Update capability, the signed-in user lacks edit permission, or the layer is read-only. The query test can still run, but the controlled update and rollback tests require a different layer that advertises `Update`.
-
-### Update succeeds but ArcGIS Pro still shows the old value
-
-The server edit may be correct while ArcGIS Pro retains a cached feature or popup. Close/reopen the popup, refresh the layer, or toggle layer visibility before judging the server result.
-
-### 400, 403, 498 or 499 errors
-
-- `400` — invalid request, field value, redirect URI or PKCE transaction
-- `403` — user or application lacks permission
-- `498` / `499` — token invalid, expired or required
-
-## Official references
-
-- ArcGIS OAuth authorization-code flow with PKCE
-- ArcGIS OAuth `/authorize` and `/token` operations
-- ArcGIS Feature Service `query` operation
-- ArcGIS Feature Service `updateFeatures` operation
-- ArcGIS HTTP authorization headers
+- ArcGIS authorization cannot run inside the popup iframe.
+- OAuth popup windows are not dependable from this ArcGIS Pro popup context.
+- The out-of-band flow requires one manual copy/paste step.
+- The target service must advertise `Update` for edit and rollback tests.
+- ArcGIS Pro may require a layer refresh or visibility toggle after an external edit.

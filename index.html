@@ -9,9 +9,9 @@
 </head>
 <body>
   <main class="app">
-    <div class="build">POPUP LAB — BUILD 007</div>
+    <div class="build">POPUP LAB — BUILD 0072</div>
     <h1>Authenticated editing laboratory</h1>
-    <p class="subtitle">OAuth 2.0 PKCE, secured feature queries, controlled updates, verification and rollback</p>
+    <p class="subtitle">External-browser OAuth 2.0 PKCE, secured feature queries, controlled updates, verification and rollback</p>
 
     <section class="section">
       <h2>1. Popup context and application configuration</h2>
@@ -38,16 +38,21 @@
     </section>
 
     <section class="section">
-      <h2>2. OAuth 2.0 authorization-code flow with PKCE</h2>
+      <h2>2. External-browser OAuth 2.0 authorization-code flow with PKCE</h2>
       <div class="panel">
         <div class="warning">
-          Use an OAuth browser application registered in the same ArcGIS organisation as the target service. Register the exact callback URL shown below. Do not use or publish a client secret.
+          ArcGIS Online refuses to render its sign-in page inside the ArcGIS Pro popup iframe, and this popup context does not provide a usable OAuth child window. Lab 7 therefore uses ArcGIS's registered out-of-band redirect. Authentication occurs in the normal browser; only the short-lived authorization code is pasted back here. Do not use or publish a client secret.
         </div>
-        <div class="label">Required redirect URI</div>
+        <div class="label">Required registered redirect URI</div>
         <div class="field-value" id="redirectUri"></div>
         <div class="actions">
-          <button id="signInPopup">Sign in — popup test</button>
-          <button id="signInRedirect" class="secondary">Sign in — iframe redirect fallback</button>
+          <button id="prepareExternal">1. Prepare external sign-in</button>
+          <a id="externalAuthLink" class="button-link hidden" href="#" target="_blank" rel="noopener noreferrer">2. Open ArcGIS sign-in in browser</a>
+        </div>
+        <div class="label">Authorization result</div>
+        <textarea id="authCodeInput" rows="3" spellcheck="false" placeholder="After signing in, copy the full ArcGIS approval-page URL from the browser address bar, or paste the authorization code only."></textarea>
+        <div class="actions">
+          <button id="completeExternal" class="good">3. Complete sign-in from pasted code</button>
           <button id="signOut" class="danger">Forget current token</button>
         </div>
         <div class="status" id="authStatus">Not signed in.</div>
