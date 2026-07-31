@@ -1,9 +1,9 @@
 // Popup Lab 7 v1.2 — external-browser PKCE and robust Object ID detection for ArcGIS Pro 3.5.3
 
-var APP_URL = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
-var CLIENT_ID = "YOUR_CLIENT_ID";
+var APP_URL = "https://frakntoastr.github.io/arcgis-popup-lab-6/";
+var CLIENT_ID = "2i8ErWnjyQES93El";
 var PORTAL_URL = "https://www.arcgis.com";
-var SERVICE_URL = "https://YOUR-FEATURE-SERVICE/FeatureServer/0";
+var SERVICE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/City_Plan_Shape/FeatureServer/0";
 
 // Detect the real Object ID field instead of assuming it is named OBJECTID.
 var featureSchema = Schema($feature);
