@@ -10,6 +10,17 @@ Lab 6 tests a real HTTPS-hosted iframe rather than a `data:` iframe.
 - `.nojekyll` — prevents Jekyll processing
 - `popup_lab_6.arcade` — ArcGIS Pro popup Arcade element
 
+
+## ArcGIS Pro expression validation
+
+1. Add a new **Arcade popup element**.
+2. Paste `popup_lab_6_smoke_test.arcade` first and click **Verify**.
+3. After the green validation card appears, replace the entire expression with `popup_lab_6.arcade`.
+4. Change only the text between the quotation marks on the `APP_URL` line. Keep both quotation marks and the final semicolon.
+5. Do not paste Markdown code fences or the filename into the Arcade editor.
+
+The primary expression is intentionally written without helper functions or optional field lookups for maximum compatibility with ArcGIS Pro 3.5.3.
+
 ## Publish with GitHub Pages
 
 1. Create a GitHub repository, for example `arcgis-popup-lab-6`.
