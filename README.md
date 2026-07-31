@@ -95,7 +95,18 @@ For ArcGIS Enterprise, `PORTAL_URL` should be the portal root, for example:
 
 `https://gis.example.gov.au/portal`
 
-The expression assumes the layer Object ID field is available as `$feature.OBJECTID`. Change that single reference if the popup layer exposes the Object ID under a different field name.
+The v1.1 expression detects the Object ID field from `Schema($feature).objectIdField`, so layers whose Object ID is named `FID`, `OBJECTID`, or another valid name are supported automatically.
+
+## 4A. Confirm that Lab 7 is actually inside the ArcGIS Pro popup
+
+When opened correctly from a feature popup, Section 1 must report:
+
+- `Source: ArcGIS-Pro`
+- `Inside iframe: true`
+- a numeric Object ID
+- the detected Object ID field name
+
+If it reports `Source: Direct browser` and `Inside iframe: false`, the GitHub page was opened directly and ArcGIS Pro did not supply feature context. Direct-browser testing is still possible in v1.1 by entering an Object ID manually in Section 4.
 
 ## 5. Run the OAuth tests
 
@@ -144,7 +155,7 @@ The feature service or portal may not allow the GitHub Pages origin, or a revers
 
 ### Metadata loads but Update is unavailable
 
-The service does not advertise the Update capability, the signed-in user lacks edit permission, or the layer is read-only.
+The service does not advertise the Update capability, the signed-in user lacks edit permission, or the layer is read-only. The query test can still run, but the controlled update and rollback tests require a different layer that advertises `Update`.
 
 ### Update succeeds but ArcGIS Pro still shows the old value
 

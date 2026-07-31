@@ -90,14 +90,23 @@
   function renderEnvironment() {
     const pairs = [
       ["Hosted origin", window.location.origin],
-      ["ArcGIS Pro OBJECTID", params.get("oid") || "Not supplied"],
+      ["ArcGIS Pro Object ID", params.get("oid") || "Not supplied"],
+      ["ArcGIS Pro Object ID field", params.get("oidField") || "Not supplied"],
       ["Source", params.get("source") || "Direct browser"],
       ["Build parameter", params.get("build") || "Not supplied"],
       ["Secure context", String(window.isSecureContext)],
       ["Inside iframe", String(window.self !== window.top)]
     ];
     el("environment").innerHTML = pairs.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join("");
-    el("oidValue").textContent = params.get("oid") || "Not supplied";
+    el("oidValue").value = params.get("oid") || "";
+
+    if (!params.get("oid")) {
+      setStatus(
+        "queryStatus",
+        "No Object ID arrived in the URL. Open Lab 7 through the ArcGIS Pro Arcade popup, or enter an Object ID above for direct-browser testing.",
+        "warn"
+      );
+    }
   }
 
   function escapeHtml(value) {
@@ -405,9 +414,11 @@
   }
 
   function getObjectId() {
-    const raw = params.get("oid");
+    const raw = String(params.get("oid") || el("oidValue").value || "").trim();
     const oid = Number(raw);
-    if (!raw || !Number.isFinite(oid)) throw new Error("The iframe URL did not supply a numeric oid parameter.");
+    if (!raw || !Number.isFinite(oid) || !Number.isInteger(oid)) {
+      throw new Error("No valid integer Object ID is available. Open the app through the ArcGIS Pro popup or enter an Object ID manually.");
+    }
     return oid;
   }
 
