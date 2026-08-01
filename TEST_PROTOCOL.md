@@ -1,39 +1,36 @@
-# End-to-end test protocol — v1.1
+# End-to-end test protocol — v1.2
 
-## Test A — bridge-mode Layer A to external scroller
+## A. Schema preparation
 
-1. Open `scroller.html` and leave live polling active on `DEMO_01`.
-2. Open a multipatch or read-only Layer A popup configured with `SOURCE_MODE = "bridge"`.
-3. Sign in through the external-browser PKCE flow.
-4. Inspect the source. Confirm the diagnostics show a state ID such as `BUILDINGS_3D|<bridge_key>`.
-5. Enter `MULTIPATCH SOURCE IS TRANSMITTING — 001`.
-6. Leave both persistence and channel publication selected.
-7. Confirm and save.
-8. Confirm the bridge-state value and channel value are verified.
-9. Confirm the external sine scroller changes within the polling interval.
+1. Run the revised PYT with Polygon Layer A, Multipatch Layer B, and `live_message_seed.csv`.
+2. Confirm existing Layer A and Layer B fields are accepted rather than duplicated.
+3. Confirm the CSV is reported as a seed table with no Object ID.
+4. Confirm a geodatabase table named `Popup_Live_Bridge` is created or reused.
+5. Confirm the derived output table has an Object ID, all required fields, and one `DEMO_01` channel row.
 
-## Test B — external app to bridge-mode Layer B popup
+## B. Hosted bridge table
 
-1. Open a Layer B multipatch popup configured with `TARGET_MODE = "bridge"` and leave it open.
-2. In the external scroller select **Bridge-table popup state**.
-3. Enter the shared table URL, Layer B logical key, selected feature `bridge_key`, key field, and display field.
-4. Load the target. A missing row is valid if the table advertises Create.
-5. Enter `EXTERNAL APP UPDATED MULTIPATCH POPUP — 001`.
-6. Confirm and apply.
-7. Confirm the external app verifies the table value.
-8. Confirm the already-open target popup changes on the next poll.
-9. Close and reopen ArcGIS Pro and confirm the displayed bridge value persists.
+1. Publish the prepared geodatabase table as a hosted table.
+2. Enable Query, Create, and Update.
+3. Put its `FeatureServer/<layer id>` URL into `config.js`.
 
-## Test C — mixed direct and bridge modes
+## C. Layer A to external scroller
 
-- Use direct mode for an editable Layer A and bridge mode for a multipatch Layer B.
-- Repeat with bridge mode for Layer A and direct mode for Layer B.
-- Confirm each application reports the selected persistence mode in diagnostics.
+1. Open the Layer A hosted popup and authenticate.
+2. Change `scroller_message` and publish it to `DEMO_01`.
+3. Open `scroller.html` in a normal browser.
+4. Confirm the new value appears in the sine scroller on the next polling cycle.
 
-## Failure checks
+## D. External app to multipatch Layer B popup
 
-- Duplicate a `state_id` and confirm the app rejects the ambiguous record.
-- Remove Create from the bridge table and test a new feature-state row.
-- Remove Update and test an existing feature-state row.
-- Blank a feature key and confirm the Arcade or hosted app blocks persistence.
-- Allow a token to expire and confirm a new sign-in is requested.
+1. Open a multipatch feature popup and note its `bridge_key` diagnostic.
+2. In the external app select **Bridge-table popup state**.
+3. Enter the Layer B logical key and the selected multipatch `bridge_key`.
+4. Apply a new popup message.
+5. Confirm the already-open Layer B popup changes on its next polling cycle.
+6. Close and reopen the popup and restart ArcGIS Pro; confirm the bridge-table value persists.
+
+## E. Safety confirmation
+
+- Confirm the multipatch geometry and original source attribute remain unchanged.
+- Confirm only the hosted bridge table contains the persistent display-state edit.

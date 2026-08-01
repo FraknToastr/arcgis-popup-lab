@@ -1,4 +1,4 @@
-// ArcGIS Popup Live Bridge Prototype v1.1
+// ArcGIS Popup Live Bridge Prototype v1.2
 // Layer B live target popup — ArcGIS Pro 3.5.3
 // Use TARGET_MODE = "bridge" for read-only layers, including multipatch layers.
 

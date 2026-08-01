@@ -1,8 +1,10 @@
-# ArcGIS Popup Live Bridge Prototype v1.1
+# ArcGIS Popup Live Bridge Prototype v1.2
 
-Version 1.1 adds **bridge-table persistence** for multipatch and other read-only ArcGIS Pro layers while retaining the direct editable-feature workflow from v1.0.
+Version 1.2 retains the direct-edit and bridge-table workflows from v1.1 and repairs the schema preparation workflow for the supplied `live_message_seed.csv`.
 
-## What the system now supports
+A CSV has no ArcGIS Object ID. It is a **seed source**, not the operational live bridge table. The revised PYT now creates or reuses a geodatabase table, adds the complete bridge schema, safely merges the CSV seed row, and returns the prepared table as a derived output.
+
+## Supported architecture
 
 ### Direct mode
 
@@ -10,7 +12,7 @@ The hosted app updates and verifies a real attribute through an editable `Featur
 
 ### Bridge mode
 
-The original feature remains unchanged. A stable feature key identifies a row in the editable hosted bridge table. The hosted popup reads and writes that row, so the value displayed in a multipatch popup can persist and can be changed from the external scroller app.
+The original feature remains unchanged. A stable feature key identifies a row in the editable hosted bridge table. The hosted popup reads and writes that row, so a value displayed in a multipatch or other read-only popup can persist and can be changed from the external scroller app.
 
 ```text
 Read-only or multipatch feature
@@ -23,21 +25,22 @@ Hosted bridge-table feature-state row
     └── value survives popup closure and ArcGIS Pro restart
 ```
 
-GitHub Pages hosts only the interfaces. ArcGIS hosted services provide authentication, persistence, and shared communication.
+GitHub Pages hosts the interfaces. ArcGIS hosted services provide authentication, persistence, and shared communication.
 
 ## Package contents
 
 - `source-popup.html` / `source-popup.js` — Layer A publisher with direct and bridge modes
 - `scroller.html` / `scroller.js` — external demoscene sine scroller and Layer B editor
 - `target-popup.html` / `target-popup.js` — Layer B receiver with direct and bridge modes
-- `auth.js` — OAuth 2.0 authorization code with PKCE, using the proven out-of-band flow
+- `auth.js` — OAuth 2.0 authorization code with PKCE using the proven out-of-band flow
 - `arcgis-rest.js` — ArcGIS metadata, query, add, update, channel, and feature-state helpers
 - `config.js` — public configuration; no client secrets
-- `arcade/layer_a_source_popup.arcade` — source popup expression
-- `arcade/layer_b_target_popup.arcade` — target popup expression
-- `Popup_Live_Bridge_Schema_Tool.pyt` — schema tool, also supplied under `tools/`
-- `live_message_seed.csv` — seed channel row
-- `live_message_schema.json` — full bridge-table schema
+- `arcade/layer_a_source_popup.arcade` — Layer A popup expression
+- `arcade/layer_b_target_popup.arcade` — Layer B popup expression
+- `Popup_Live_Bridge_Schema_Tool.pyt` — schema tool, duplicated under `tools/`
+- `live_message_seed.csv` — seed input only; not the live table
+- `live_message_schema.json` — complete bridge-table schema
+- `SCHEMA_TOOL_GUIDE.md` — detailed PYT instructions
 - `MULTIPATCH_GUIDE.md` — read-only and multipatch setup
 - `SETUP_CHECKLIST.md` and `TEST_PROTOCOL.md`
 
@@ -46,8 +49,6 @@ GitHub Pages hosts only the interfaces. ArcGIS hosted services provide authentic
 The shared hosted table stores two record types.
 
 ### Channel record
-
-Used by the Layer A publisher and the full-screen sine scroller.
 
 ```text
 record_type = channel
@@ -58,16 +59,14 @@ message     = current scroller message
 
 ### Feature-state record
 
-Used when Layer A or Layer B is configured in bridge mode.
-
 ```text
-record_type      = feature_state
-state_id         = BUILDINGS_3D|1B9A...F0
-layer_key        = BUILDINGS_3D
-feature_key      = 1B9A...F0
-feature_key_field= bridge_key
-display_field    = popup_message
-message          = current persistent popup value
+record_type       = feature_state
+state_id          = BUILDINGS_3D|1B9A...F0
+layer_key         = BUILDINGS_3D
+feature_key       = 1B9A...F0
+feature_key_field = bridge_key
+display_field     = popup_message
+message           = current persistent popup value
 ```
 
 `state_id` is logically unique and is constructed from `layer_key + "|" + feature_key`.
@@ -76,38 +75,39 @@ message          = current persistent popup value
 
 Add `Popup_Live_Bridge_Schema_Tool.pyt` to ArcGIS Pro and run **Prepare Popup Live Bridge Schema**.
 
-For each input layer choose:
+For each operational layer choose:
 
 - **Direct attribute** — adds only the direct text field;
 - **Bridge table** — adds and populates only `bridge_key`;
 - **Both** — prepares both paths.
 
-For a multipatch layer select **Bridge table** or **Both**. Run the tool against the source geodatabase feature class before publishing when the online scene layer does not permit schema changes.
+For a multipatch Layer B, select **Bridge table** or **Both**. Run the tool against the source geodatabase multipatch feature class before publishing when the online scene layer does not permit schema changes.
 
-The tool:
+For **Existing live bridge table or seed CSV**, either:
 
-- adds `scroller_message` or your selected Layer A direct field when requested;
-- adds `popup_message` or your selected Layer B direct field when requested;
-- adds `bridge_key` as `TEXT(64)` when bridge mode is requested;
-- fills blank bridge keys from GlobalID where available, otherwise with UUID values;
-- checks that bridge keys are unique;
-- adds the complete shared-table schema;
-- adds optional indexes on `bridge_key`, `channel_id`, and `state_id`;
-- creates or completes the `DEMO_01` seed channel.
+- select an existing geodatabase/enterprise/hosted table that already has an Object ID; or
+- select the supplied `live_message_seed.csv`.
 
-It never deletes existing data or workspaces.
+When a CSV or other no-OID table is selected, the tool uses:
 
-## 2. Publish the shared bridge table
+- **Output geodatabase when input has no Object ID** — defaults to the current project geodatabase;
+- **Output bridge table name** — defaults to `Popup_Live_Bridge`.
 
-Publish the prepared table as an ArcGIS hosted table and enable:
+The resulting geodatabase table is returned as **Prepared live bridge table**.
+
+The tool is safe to rerun. Existing fields, bridge keys, output tables, and populated live values are retained. It never deletes fields, records, datasets, workspaces, or geodatabases.
+
+## 2. Publish the prepared bridge table
+
+Publish the **Prepared live bridge table** from the geodatabase as an ArcGIS hosted table. Enable:
 
 - Query
 - Create
 - Update
 
-The table is the only dataset that must be editable when both operational layers use bridge mode.
+Do not use the CSV path as `liveTableUrl`. Do not point the applications at `live_message_seed.csv`.
 
-Do not create duplicate `channel_id` or `state_id` values.
+The table is the only dataset that must be editable when both operational layers use bridge mode.
 
 ## 3. Configure OAuth
 
@@ -121,8 +121,6 @@ No client secret is used or stored.
 
 ## 4. Configure `config.js`
 
-Set the portal, client ID, bridge table URL, and direct-browser defaults.
-
 ```javascript
 window.POPUP_BRIDGE_CONFIG = {
   portalUrl: "https://www.arcgis.com",
@@ -130,33 +128,33 @@ window.POPUP_BRIDGE_CONFIG = {
   liveTableUrl: "https://.../FeatureServer/0",
   channelId: "DEMO_01",
   source: {
-    mode: "bridge",
-    layerKey: "BUILDINGS_3D",
+    mode: "direct",
+    layerKey: "CITY_PLAN_SHAPE",
     featureKeyField: "bridge_key",
     messageField: "scroller_message"
   },
   target: {
     mode: "bridge",
-    layerKey: "OTHER_BUILDINGS_3D",
+    layerKey: "SID_2026_MULTIPATCH",
     featureKeyField: "bridge_key",
     displayField: "popup_message"
   }
 };
 ```
 
-The Arcade expressions override selected-feature values through query parameters.
+For the reported Polygon Layer A plus Multipatch Layer B workflow, use direct or both mode for Layer A and bridge mode for Layer B.
 
 ## 5. Publish through GitHub Pages
 
-Upload all web files to the repository root, retain `.nojekyll`, and enable GitHub Pages over HTTPS.
+Upload the web files to the repository root, retain `.nojekyll`, and enable GitHub Pages over HTTPS.
 
-The v1.1 HTML files include versioned script and stylesheet URLs to reduce stale-cache confusion.
+The v1.2 HTML files use versioned script and stylesheet URLs to reduce stale-cache confusion.
 
-## 6. Configure the Layer A popup
+## 6. Configure Layer A
 
 Run `arcade/smoke_test.arcade`, then use `arcade/layer_a_source_popup.arcade`.
 
-### Editable feature layer
+Editable Polygon example:
 
 ```arcade
 var SOURCE_MODE = "direct";
@@ -164,34 +162,13 @@ var SOURCE_SERVICE_URL = "https://.../FeatureServer/0";
 var SOURCE_MESSAGE_FIELD = "scroller_message";
 ```
 
-### Multipatch or read-only layer
+## 7. Configure multipatch Layer B
 
-```arcade
-var SOURCE_MODE = "bridge";
-var SOURCE_LAYER_KEY = "BUILDINGS_3D";
-var SOURCE_KEY_FIELD = "bridge_key";
-var SOURCE_MESSAGE_FIELD = "scroller_message";
-```
-
-In bridge mode the service URL is not used for the edit. The selected feature key is passed directly from Arcade to the hosted app.
-
-## 7. Configure the Layer B popup
-
-Use `arcade/layer_b_target_popup.arcade`.
-
-### Editable feature layer
-
-```arcade
-var TARGET_MODE = "direct";
-var TARGET_SERVICE_URL = "https://.../FeatureServer/0";
-var TARGET_DISPLAY_FIELD = "popup_message";
-```
-
-### Multipatch or read-only layer
+Use `arcade/layer_b_target_popup.arcade`:
 
 ```arcade
 var TARGET_MODE = "bridge";
-var TARGET_LAYER_KEY = "OTHER_BUILDINGS_3D";
+var TARGET_LAYER_KEY = "SID_2026_MULTIPATCH";
 var TARGET_KEY_FIELD = "bridge_key";
 var TARGET_DISPLAY_FIELD = "popup_message";
 ```
@@ -202,15 +179,8 @@ The open target popup polls the feature-state row and animates when its `message
 
 Open `scroller.html` in a normal browser.
 
-The Layer B editor now offers:
-
-- **Direct FeatureServer attribute** — query an editable feature, select a field, update, and verify;
-- **Bridge-table popup state** — enter the target layer key and feature key, then add or update the persistent state row.
-
-For a multipatch target, use the same `TARGET_LAYER_KEY` and selected feature `bridge_key` used by its Arcade popup expression.
+For the multipatch target select **Bridge-table popup state**, then use the same logical layer key and selected feature `bridge_key` used by the Layer B Arcade expression.
 
 ## Important limitation
 
-Bridge mode changes the **persistent value displayed by the hosted popup**, not the original attribute stored inside the multipatch feature class or scene layer. The multipatch geometry and its source attributes remain unchanged.
-
-If the actual source attribute must change, use an editable associated FeatureServer where available, republish from an updated source dataset, or introduce an ArcGIS Pro SDK/local workflow.
+Bridge mode changes the persistent value displayed by the hosted popup. It does not alter the original multipatch attribute row or geometry. To modify the actual multipatch source attributes, use an editable associated FeatureServer where available, republish from an updated source dataset, or introduce an ArcGIS Pro SDK/local process.

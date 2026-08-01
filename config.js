@@ -1,5 +1,5 @@
 /*
-  ArcGIS Popup Live Bridge Prototype v1.1
+  ArcGIS Popup Live Bridge Prototype v1.2
 
   Public client-side configuration only. Never place a client secret,
   password, long-lived token, or API key in this file.
