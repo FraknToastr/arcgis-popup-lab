@@ -3,13 +3,13 @@
 // Use SOURCE_MODE = "bridge" for read-only layers, including multipatch layers.
 
 var APP_ROOT = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
-var CLIENT_ID = "YOUR_CLIENT_ID";
+var CLIENT_ID = "2i8ErWnjyQES93El";
 var PORTAL_URL = "https://www.arcgis.com";
-var LIVE_TABLE_URL = "https://YOUR-LIVE-BRIDGE-TABLE/FeatureServer/0";
+var LIVE_TABLE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/Popup_Live_Bridge/FeatureServer/0";
 var CHANNEL_ID = "DEMO_01";
 
 var SOURCE_MODE = "direct"; // direct | bridge
-var SOURCE_SERVICE_URL = "https://YOUR-SOURCE-LAYER/FeatureServer/0";
+var SOURCE_SERVICE_URL = "hhttps://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/City_Plan_Shape_Private/FeatureServer/0";
 var SOURCE_MESSAGE_FIELD = "scroller_message";
 var SOURCE_LAYER_KEY = "LAYER_A";
 var SOURCE_KEY_FIELD = "bridge_key";
