@@ -1,4 +1,4 @@
-# Setup checklist — v1.2
+# Setup checklist — v1.3
 
 ## ArcGIS Pro schema
 

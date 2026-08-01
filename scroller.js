@@ -133,8 +133,16 @@
     ctx.fillRect(0, horizon - 100, render.width, 230);
   }
 
-  function textMetrics() {
-    const size = Math.max(38, Math.min(88, render.width / 12));
+  function scrollerRightEdge() {
+    const panel = el("controlPanel");
+    if (!panel || panel.classList.contains("collapsed")) return render.width;
+    const bounds = panel.getBoundingClientRect();
+    if (bounds.left <= 0 || bounds.left >= render.width) return render.width;
+    return Math.max(180, bounds.left - 18);
+  }
+
+  function textMetrics(availableWidth = render.width) {
+    const size = Math.max(38, Math.min(88, availableWidth / 12));
     ctx.font = `900 ${size}px "Segoe UI", Arial, sans-serif`;
     const spacing = size * .08;
     const chars = [...`${render.message}     `];
@@ -143,12 +151,19 @@
   }
 
   function drawScroller(time) {
-    const metrics = textMetrics();
+    const rightEdge = scrollerRightEdge();
+    const metrics = textMetrics(rightEdge);
     const yBase = render.height * .47;
-    let cursor = render.width - (render.scroll % Math.max(metrics.total, 1));
-    const copies = Math.ceil((render.width + metrics.total) / Math.max(metrics.total, 1)) + 1;
+    let cursor = rightEdge - (render.scroll % Math.max(metrics.total, 1));
+    const copies = Math.ceil((rightEdge + metrics.total) / Math.max(metrics.total, 1)) + 1;
     const fadeIn = Math.min(1, (performance.now() - render.changedAt) / 350);
 
+    // Keep the animated message in the visible stage. When the control panel is
+    // open, the scroller stops at its left edge instead of disappearing behind it.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, rightEdge, render.height);
+    ctx.clip();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     for (let copy = 0; copy < copies; copy++) {
@@ -156,7 +171,7 @@
         const char = metrics.chars[i];
         const width = metrics.widths[i];
         const x = cursor;
-        if (x > -metrics.size * 2 && x < render.width + metrics.size * 2) {
+        if (x > -metrics.size * 2 && x < rightEdge + metrics.size * 2) {
           const phase = x * render.frequency + time * 2.15;
           const y = yBase + Math.sin(phase) * render.amplitude;
           const slope = render.amplitude * render.frequency * Math.cos(phase);
@@ -179,6 +194,7 @@
         cursor += width;
       }
     }
+    ctx.restore();
   }
 
   function drawScanlines() {
@@ -320,14 +336,17 @@
   }
 
   function targetSettings() {
+    const rawFeatureKey = el("targetFeatureKey").value;
+    const mode = BridgeCommon.normalizeMode(el("targetMode").value);
     return {
-      mode: BridgeCommon.normalizeMode(el("targetMode").value),
+      mode,
       service: BridgeCommon.normalizeUrl(el("targetService").value),
       oid: Number(el("targetOid").value),
       oidField: el("targetOidField").value.trim(),
       bridgeTable: BridgeCommon.normalizeUrl(el("targetBridgeTable").value),
-      layerKey: el("targetLayerKey").value.trim(),
-      featureKey: el("targetFeatureKey").value.trim(),
+      layerKey: mode === "bridge" ? BridgeCommon.normalizeLayerKey(el("targetLayerKey").value) : el("targetLayerKey").value.trim(),
+      featureKey: mode === "bridge" ? BridgeCommon.normalizeFeatureKey(rawFeatureKey) : rawFeatureKey.trim(),
+      rawFeatureKey,
       featureKeyField: el("targetFeatureKeyField").value.trim(),
       displayField: el("targetBridgeDisplayField").value.trim()
     };
@@ -378,6 +397,10 @@
 
     BridgeCommon.setStatus("targetStatus", `Loading ${settings.mode} target…`, "info");
     try {
+      if (settings.mode === "bridge" && settings.featureKey !== String(settings.rawFeatureKey || "").trim()) {
+        el("targetFeatureKey").value = settings.featureKey;
+        BridgeCommon.setStatus("targetStatus", "A copied attribute-table row was detected. The GUID bridge key was extracted automatically.", "warn");
+      }
       targetState.mode = settings.mode;
       if (settings.mode === "direct") {
         const result = await ArcGISRest.queryByOid(settings.service, settings.oid, token(), settings.oidField);
@@ -495,7 +518,11 @@
     applyTargetModeUi();
   }
 
-  el("controlToggle").addEventListener("click", () => el("controlPanel").classList.toggle("collapsed"));
+  el("controlToggle").addEventListener("click", () => {
+    el("controlPanel").classList.toggle("collapsed");
+    render.scroll = 0;
+    render.changedAt = performance.now();
+  });
   el("pollToggle").addEventListener("click", togglePolling);
   el("pollNow").addEventListener("click", pollOnce);
   el("applyVisual").addEventListener("click", applyLocal);

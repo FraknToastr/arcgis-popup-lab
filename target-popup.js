@@ -17,15 +17,16 @@
   const state = { running:false,busy:false,timer:null,currentValue:Symbol("not-loaded"),checks:0,changes:0,metadata:null,oidField:"" };
 
   function values() {
+    const mode = BridgeCommon.normalizeMode(el("targetMode").value);
     return {
-      mode: BridgeCommon.normalizeMode(el("targetMode").value),
+      mode,
       service: BridgeCommon.normalizeUrl(el("targetService").value),
       field: el("targetField").value.trim(),
       oid: Number(el("targetOid").value),
       oidField: el("targetOidField").value.trim(),
       liveTable: BridgeCommon.normalizeUrl(el("liveTable").value),
-      layerKey: el("targetLayerKey").value.trim(),
-      featureKey: el("targetKey").value.trim(),
+      layerKey: mode === "bridge" ? BridgeCommon.normalizeLayerKey(el("targetLayerKey").value) : el("targetLayerKey").value.trim(),
+      featureKey: mode === "bridge" ? BridgeCommon.normalizeFeatureKey(el("targetKey").value) : el("targetKey").value.trim(),
       featureKeyField: el("targetKeyField").value.trim(),
       bridgeDisplayField: el("bridgeDisplayField").value.trim(),
       pollMs: Math.max(500, Number(el("pollMs").value) || 1000)

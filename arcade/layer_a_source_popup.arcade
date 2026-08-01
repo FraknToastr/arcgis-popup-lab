@@ -1,18 +1,20 @@
-// ArcGIS Popup Live Bridge Prototype v1.2
+// ArcGIS Popup Live Bridge Prototype v1.3
 // Layer A source popup — ArcGIS Pro 3.5.3
 // Use SOURCE_MODE = "bridge" for read-only layers, including multipatch layers.
 
-var APP_ROOT = "https://frakntoastr.github.io/arcgis-popup-lab/";
-var CLIENT_ID = "2i8ErWnjyQES93El";
+var APP_ROOT = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
+var CLIENT_ID = "YOUR_CLIENT_ID";
 var PORTAL_URL = "https://www.arcgis.com";
-var LIVE_TABLE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/Popup_Live_Bridge/FeatureServer/0";
+var LIVE_TABLE_URL = "https://YOUR-LIVE-BRIDGE-TABLE/FeatureServer/0";
 var CHANNEL_ID = "DEMO_01";
 
 var SOURCE_MODE = "direct"; // direct | bridge
-var SOURCE_SERVICE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/City_Plan_Shape_Private/FeatureServer/0";
+var SOURCE_SERVICE_URL = "https://YOUR-SOURCE-LAYER/FeatureServer/0";
 var SOURCE_MESSAGE_FIELD = "scroller_message";
 var SOURCE_LAYER_KEY = "LAYER_A";
 var SOURCE_KEY_FIELD = "bridge_key";
+
+Expects($feature, "*");
 
 var featureSchema = Schema($feature);
 var oidField = featureSchema.objectIdField;
@@ -81,7 +83,7 @@ var queryParameters = {
     sourceKeyField: keyField,
     sourceInitialValue: initialValue,
     source: "ArcGIS-Pro-Layer-A",
-    build: "110"
+    build: "130"
 };
 
 var appSource = APP_ROOT + "source-popup.html?" + UrlEncode(queryParameters);

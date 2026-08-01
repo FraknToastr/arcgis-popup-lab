@@ -63,9 +63,47 @@
     return !value || /YOUR[-_ ]|YOUR-LIVE|YOUR-SOURCE|YOUR-TARGET|YOUR_CLIENT/i.test(String(value));
   }
 
+  function normalizeGuid(value) {
+    const text = String(value ?? "").trim();
+    const match = text.match(/^\{?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\}?$/i);
+    return match ? match[1].toUpperCase() : "";
+  }
+
+  function normalizeFeatureKey(value) {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "";
+
+    // A row copied from an ArcGIS attribute table is tab-delimited. Recover the
+    // last GUID-like token rather than sending the complete row to state_id.
+    if (/[\t\r\n]/.test(raw)) {
+      const tokens = raw.split(/[\t\r\n]+/).map((part) => part.trim()).filter(Boolean);
+      for (let index = tokens.length - 1; index >= 0; index -= 1) {
+        const guid = normalizeGuid(tokens[index]);
+        if (guid) return guid;
+      }
+      throw new Error("Feature key contains a copied attribute-table row. Paste only the bridge_key or GlobalID value.");
+    }
+
+    const guid = normalizeGuid(raw);
+    if (guid) return guid;
+    if (raw.length > 255) throw new Error("Feature key is longer than 255 characters.");
+    if (/[<>\u0000-\u001f]/.test(raw)) throw new Error("Feature key contains unsafe control or HTML characters.");
+    return raw;
+  }
+
+  function normalizeLayerKey(value) {
+    const key = String(value ?? "").trim();
+    if (!key) return "";
+    if (key.length > 128) throw new Error("Logical layer key is longer than 128 characters.");
+    if (!/^[A-Za-z0-9._:-]+$/.test(key)) throw new Error("Logical layer key may contain only letters, numbers, period, underscore, colon and hyphen.");
+    return key;
+  }
+
   function stateId(layerKey, featureKey) {
-    const layer = String(layerKey || "").trim();
-    const feature = String(featureKey || "").trim();
+    const layer = normalizeLayerKey(layerKey);
+    const feature = normalizeFeatureKey(featureKey);
+    if (!layer) throw new Error("Logical layer key is required.");
+    if (!feature) throw new Error("Feature key is required.");
     return `${layer}|${feature}`;
   }
 
@@ -175,6 +213,9 @@
     formatValue,
     formatDate,
     isPlaceholder,
+    normalizeGuid,
+    normalizeFeatureKey,
+    normalizeLayerKey,
     stateId,
     resolveConfig,
     validateLayerUrl,

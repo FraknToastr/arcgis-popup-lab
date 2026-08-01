@@ -1,4 +1,4 @@
-# Schema tool guide — v1.2
+# Schema tool guide — v1.3
 
 ## Purpose
 
@@ -50,7 +50,7 @@ When the input has no Object ID, the tool:
 
 ## Safe rerun after the v1.1 failure
 
-The earlier run already added fields and bridge keys to Layer A and Layer B before stopping at the CSV. Rerun v1.2 with the same layers and values.
+The earlier run already added fields and bridge keys to Layer A and Layer B before stopping at the CSV. Rerun v1.3 with the same layers and values.
 
 The revised tool will:
 

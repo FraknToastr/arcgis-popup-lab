@@ -1,6 +1,6 @@
-# ArcGIS Popup Live Bridge Prototype v1.2
+# ArcGIS Popup Live Bridge Prototype v1.3
 
-Version 1.2 retains the direct-edit and bridge-table workflows from v1.1 and repairs the schema preparation workflow for the supplied `live_message_seed.csv`.
+Version 1.3 retains the direct-edit and bridge-table workflows from v1.1 and repairs the schema preparation workflow for the supplied `live_message_seed.csv`.
 
 A CSV has no ArcGIS Object ID. It is a **seed source**, not the operational live bridge table. The revised PYT now creates or reuses a geodatabase table, adds the complete bridge schema, safely merges the CSV seed row, and returns the prepared table as a derived output.
 
@@ -148,7 +148,7 @@ For the reported Polygon Layer A plus Multipatch Layer B workflow, use direct or
 
 Upload the web files to the repository root, retain `.nojekyll`, and enable GitHub Pages over HTTPS.
 
-The v1.2 HTML files use versioned script and stylesheet URLs to reduce stale-cache confusion.
+The v1.3 HTML files use versioned script and stylesheet URLs to reduce stale-cache confusion.
 
 ## 6. Configure Layer A
 
@@ -184,3 +184,8 @@ For the multipatch target select **Bridge-table popup state**, then use the same
 ## Important limitation
 
 Bridge mode changes the persistent value displayed by the hosted popup. It does not alter the original multipatch attribute row or geometry. To modify the actual multipatch source attributes, use an editable associated FeatureServer where available, republish from an updated source dataset, or introduce an ArcGIS Pro SDK/local process.
+
+
+## Version 1.3 key rule
+
+For bridge mode, `Feature key` must contain only the selected feature's `bridge_key` or GlobalID. A whole attribute-table row is invalid. Version 1.3 automatically extracts a trailing GUID where possible and otherwise stops with a clear validation message. See `VERSION_1_3_FIXES.md`.

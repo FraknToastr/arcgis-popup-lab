@@ -1,4 +1,4 @@
-# Multipatch and read-only layer guide — v1.2
+# Multipatch and read-only layer guide — v1.3
 
 ## Why bridge mode is required
 
@@ -6,7 +6,7 @@ A multipatch scene layer often exposes a `SceneServer` for display and query but
 
 ## Recommended setup
 
-1. Run the v1.2 PYT against the source multipatch feature class in its geodatabase.
+1. Run the v1.3 PYT against the source multipatch feature class in its geodatabase.
 2. Choose **Bridge table** for Layer B, or **Both** only when a direct field is also useful locally.
 3. Accept the default `bridge_key` field and populate blank keys.
 4. Select `live_message_seed.csv` as the seed input.

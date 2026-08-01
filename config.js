@@ -1,37 +1,41 @@
 /*
-  ArcGIS Popup Live Bridge Prototype v1.2
+  ArcGIS Popup Live Bridge Prototype v1.3
 
   Public client-side configuration only. Never place a client secret,
   password, long-lived token, or API key in this file.
 */
 window.POPUP_BRIDGE_CONFIG = {
   portalUrl: "https://www.arcgis.com",
-  clientId: "2i8ErWnjyQES93El",
+  clientId: "YOUR_CLIENT_ID",
   oauthRedirectUri: "urn:ietf:wg:oauth:2.0:oob",
 
-  liveTableUrl: "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/Popup_Live_Bridge/FeatureServer/0",
+  // Shared editable hosted table. It stores both the live scroller channel and
+  // bridge-state records for read-only layers such as multipatch scene layers.
+  liveTableUrl: "https://YOUR-LIVE-BRIDGE-TABLE/FeatureServer/0",
   channelId: "DEMO_01",
   pollIntervalMs: 1000,
 
+  // mode: "direct" updates a real editable FeatureServer attribute.
+  // mode: "bridge" stores the popup value in the shared bridge table.
   source: {
     mode: "direct",
-    serviceUrl: "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/City_Plan_Shape_Private/FeatureServer/0",
+    serviceUrl: "https://YOUR-SOURCE-LAYER/FeatureServer/0",
     objectId: 1,
     objectIdField: "",
     messageField: "scroller_message",
-    layerKey: "CITY_PLAN_SHAPE_PRIVATE",
+    layerKey: "LAYER_A",
     featureKey: "",
     featureKeyField: "bridge_key",
     initialValue: ""
   },
 
   target: {
-    mode: "bridge",
-    serviceUrl: "",
+    mode: "direct",
+    serviceUrl: "https://YOUR-TARGET-LAYER/FeatureServer/0",
     objectId: 1,
     objectIdField: "",
     displayField: "popup_message",
-    layerKey: "SID_2026_ANCHOR_MULTIPATCH",
+    layerKey: "LAYER_B",
     featureKey: "",
     featureKeyField: "bridge_key"
   },

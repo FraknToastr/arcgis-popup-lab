@@ -1,4 +1,4 @@
-# End-to-end test protocol — v1.2
+# End-to-end test protocol — v1.3
 
 ## A. Schema preparation
 
@@ -34,3 +34,8 @@
 
 - Confirm the multipatch geometry and original source attribute remain unchanged.
 - Confirm only the hosted bridge table contains the persistent display-state edit.
+
+
+## Multipatch key verification
+
+Before **Load target**, confirm that **Feature key** is a single value such as `F7423684-4AE6-4408-8D05-6F58AD7183C2`, with no tabs, field headings or `<Null>` text. The diagnostics `stateId` must contain only `LAYER_KEY|FEATURE_KEY`.
