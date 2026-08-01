@@ -2,6 +2,10 @@
   "use strict";
 
   const config = BridgeCommon.resolveConfig();
+  const startupParams = new URLSearchParams(window.location.search);
+  const DEFAULT_TARGET_FEATURE_KEY = "F7423684-4AE6-4408-8D05-6F58AD7183C2";
+  const DEFAULT_FONT_SIZE = 86;
+
   const liveFields = {
     channelId: "channel_id",
     recordType: "record_type",
@@ -56,6 +60,10 @@
     amplitude: 72,
     frequency: 0.018,
     palette: "neon",
+    fontSize: (() => {
+      const requested = Number(startupParams.get("fontSize") || config.scrollerFontSize);
+      return Number.isFinite(requested) ? Math.max(28, Math.min(220, requested)) : DEFAULT_FONT_SIZE;
+    })(),
     stars: [],
     lastVersion: null,
     changedAt: performance.now()
@@ -259,7 +267,9 @@
   }
 
   function textMetrics(availableWidth = render.width) {
-    const size = Math.max(42, Math.min(104, availableWidth / 9.8));
+    // Font size is explicit rather than derived from the stage width. This keeps
+    // the chosen scale stable when the sidebar opens or closes.
+    const size = Math.max(28, Math.min(220, Number(render.fontSize) || DEFAULT_FONT_SIZE));
     const font = `950 ${size}px "Segoe UI Black", "Arial Black", "Segoe UI", Arial, sans-serif`;
     textCtx.font = font;
     const text = `${render.message}     `;
@@ -413,10 +423,17 @@
     render.amplitude = Math.max(0, Number(values.amplitude) || 0);
     render.frequency = Math.max(.001, Number(values.frequency) || render.frequency);
     render.palette = values.palette || render.palette;
+    if (values.fontSize !== undefined && values.fontSize !== null && values.fontSize !== "") {
+      const requestedFontSize = Number(values.fontSize);
+      if (Number.isFinite(requestedFontSize)) {
+        render.fontSize = Math.max(28, Math.min(220, requestedFontSize));
+      }
+    }
     el("manualMessage").value = nextMessage;
     el("manualSpeed").value = render.speed;
     el("manualAmplitude").value = render.amplitude;
     el("manualFrequency").value = render.frequency;
+    el("manualFontSize").value = render.fontSize;
     el("manualPalette").value = render.palette;
     el("currentMessage").textContent = nextMessage;
     el("hudStatus").textContent = `${source.toUpperCase()} • version ${values.version ?? "local"} • ${values.updatedBy || "unknown user"} • ${BridgeCommon.formatDate(values.updatedAt)}`;
@@ -499,6 +516,7 @@
       speed: Number(el("manualSpeed").value),
       amplitude: Number(el("manualAmplitude").value),
       frequency: Number(el("manualFrequency").value),
+      fontSize: Number(el("manualFontSize").value),
       palette: el("manualPalette").value,
       updatedAt: Date.now(),
       updatedBy: "local preview"
@@ -686,13 +704,17 @@
     el("targetOidField").value = config.target.objectIdField;
     el("targetBridgeTable").value = config.liveTableUrl;
     el("targetLayerKey").value = config.target.layerKey;
-    el("targetFeatureKey").value = config.target.featureKey;
+    const requestedFeatureKey = startupParams.get("featureKey") || startupParams.get("targetFeatureKey");
+    const configuredFeatureKey = String(config.target.featureKey || "").trim();
+    const initialFeatureKey = requestedFeatureKey || configuredFeatureKey || DEFAULT_TARGET_FEATURE_KEY;
+    el("targetFeatureKey").value = BridgeCommon.normalizeFeatureKey(initialFeatureKey);
     el("targetFeatureKeyField").value = config.target.featureKeyField;
     el("targetBridgeDisplayField").value = config.target.displayField;
     el("manualMessage").value = render.message;
     el("manualSpeed").value = render.speed;
     el("manualAmplitude").value = render.amplitude;
     el("manualFrequency").value = render.frequency;
+    el("manualFontSize").value = render.fontSize;
     el("manualPalette").value = render.palette;
     el("hudChannel").textContent = `CHANNEL ${config.channelId}`;
     applyTargetModeUi();
