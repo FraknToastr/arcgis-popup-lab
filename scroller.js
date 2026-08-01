@@ -223,12 +223,20 @@
 
   function applyMessage(values, source = "live") {
     const nextMessage = String(values.message || " ").trim() || " ";
-    if (nextMessage !== render.message || values.version !== render.lastVersion) {
-      render.message = `${nextMessage}     `;
+    const nextVersion = values.version == null ? null : String(values.version);
+
+    // Keep the stored message unpadded. textMetrics() adds the visual gap when
+    // measuring the loop. The previous build stored trailing spaces here, then
+    // compared that padded value with the trimmed server value on every poll.
+    // That made every poll look like a new message and reset the scroller before
+    // more than a few characters could enter the stage.
+    if (nextMessage !== render.message) {
+      render.message = nextMessage;
       render.scroll = 0;
       render.changedAt = performance.now();
     }
-    render.lastVersion = values.version ?? render.lastVersion;
+
+    render.lastVersion = nextVersion ?? render.lastVersion;
     render.speed = Math.max(20, Number(values.speed) || render.speed);
     render.amplitude = Math.max(0, Number(values.amplitude) || 0);
     render.frequency = Math.max(.001, Number(values.frequency) || render.frequency);
