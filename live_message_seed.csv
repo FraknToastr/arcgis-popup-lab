@@ -1,0 +1,2 @@
+record_type,state_id,channel_id,layer_key,feature_key,feature_key_field,display_field,message,message_version,scroller_speed,sine_amplitude,sine_frequency,palette,updated_at,updated_by
+channel,channel:DEMO_01,DEMO_01,,,,,POPUP LIVE BRIDGE READY,1,145,72,0.018,neon,2026-08-01T00:00:00Z,seed

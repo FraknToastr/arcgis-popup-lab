@@ -1,167 +1,35 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark light">
-  <title>ArcGIS Pro Popup Lab 7</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark">
+  <title>ArcGIS Popup Live Bridge Prototype</title><link rel="stylesheet" href="styles.css?v=1.1.0">
 </head>
 <body>
-  <main class="app">
-    <div class="build">POPUP LAB — BUILD 0072</div>
-    <h1>Authenticated editing laboratory</h1>
-    <p class="subtitle">External-browser OAuth 2.0 PKCE, secured feature queries, controlled updates, verification and rollback</p>
-
-    <section class="section">
-      <h2>1. Popup context and application configuration</h2>
-      <div class="panel">
-        <dl class="kv" id="environment"></dl>
-        <div class="grid">
-          <div>
-            <div class="label">ArcGIS portal URL</div>
-            <input id="portalUrl" type="url" autocomplete="off" spellcheck="false">
-          </div>
-          <div>
-            <div class="label">OAuth Client ID</div>
-            <input id="clientId" type="text" autocomplete="off" spellcheck="false">
-          </div>
-        </div>
-        <div class="label">Feature layer URL — must end in FeatureServer/&lt;layer id&gt;</div>
-        <input id="serviceUrl" type="url" autocomplete="off" spellcheck="false">
-        <div class="actions">
-          <button id="saveConfig" class="secondary">Save configuration locally</button>
-          <button id="clearConfig" class="danger">Clear saved configuration</button>
-        </div>
-        <div class="status" id="configStatus">Configuration has not been checked.</div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>2. External-browser OAuth 2.0 authorization-code flow with PKCE</h2>
-      <div class="panel">
-        <div class="warning">
-          ArcGIS Online refuses to render its sign-in page inside the ArcGIS Pro popup iframe, and this popup context does not provide a usable OAuth child window. Lab 7 therefore uses ArcGIS's registered out-of-band redirect. Authentication occurs in the normal browser; only the short-lived authorization code is pasted back here. Do not use or publish a client secret.
-        </div>
-        <div class="label">Required registered redirect URI</div>
-        <div class="field-value" id="redirectUri"></div>
-        <div class="actions">
-          <button id="prepareExternal">1. Prepare external sign-in</button>
-          <a id="externalAuthLink" class="button-link hidden" href="#" target="_blank" rel="noopener noreferrer">2. Open ArcGIS sign-in in browser</a>
-        </div>
-        <div class="label">Authorization result</div>
-        <textarea id="authCodeInput" rows="3" spellcheck="false" placeholder="After signing in, copy the full ArcGIS approval-page URL from the browser address bar, or paste the authorization code only."></textarea>
-        <div class="actions">
-          <button id="completeExternal" class="good">3. Complete sign-in from pasted code</button>
-          <button id="signOut" class="danger">Forget current token</button>
-        </div>
-        <div class="status" id="authStatus">Not signed in.</div>
-        <div id="identityPanel" class="hidden">
-          <div class="label">Authenticated identity</div>
-          <dl class="kv" id="identityDetails"></dl>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>3. Feature layer capability inspection</h2>
-      <div class="panel">
-        <div class="actions">
-          <button id="loadMetadata" class="secondary">Load secured layer metadata</button>
-        </div>
-        <div class="status" id="metadataStatus">Metadata has not been loaded.</div>
-        <dl class="kv hidden" id="metadataDetails"></dl>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>4. Query the selected feature</h2>
-      <div class="panel">
-        <div class="grid">
-          <div>
-            <div class="label">Object ID field</div>
-            <div class="field-value" id="oidField">Not known</div>
-          </div>
-          <div>
-            <label class="label" for="oidValue">Object ID supplied by ArcGIS Pro</label>
-            <input id="oidValue" type="number" step="1" placeholder="Enter an Object ID for direct-browser testing">
-          </div>
-        </div>
-        <div class="actions">
-          <button id="queryFeature" class="secondary">Query this feature</button>
-        </div>
-        <div class="status" id="queryStatus">Feature has not been queried.</div>
-        <pre class="result-json hidden" id="featureJson"></pre>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>5. Controlled attribute edit</h2>
-      <div class="panel">
-        <div class="warning">
-          Use a disposable test layer or a non-critical test record. This section performs a real server-side update. Geometry is never changed.
-        </div>
-        <div class="label">Editable field</div>
-        <select id="editField" disabled>
-          <option value="">Load metadata and query the feature first</option>
-        </select>
-
-        <div class="grid">
-          <div>
-            <div class="label">Original server value</div>
-            <div class="field-value" id="originalValue">Not loaded</div>
-          </div>
-          <div>
-            <div class="label">Current verified server value</div>
-            <div class="field-value" id="verifiedValue">Not loaded</div>
-          </div>
-        </div>
-
-        <div id="valueEditorHost">
-          <div class="label">Proposed value</div>
-          <input id="editValue" type="text" disabled>
-        </div>
-
-        <div class="confirm-row">
-          <input id="confirmEdit" type="checkbox">
-          <label for="confirmEdit">I confirm that this is a test record and authorise one real attribute update.</label>
-        </div>
-
-        <div class="actions">
-          <button id="applyUpdate" class="warn" disabled>Apply update and verify</button>
-          <button id="revertUpdate" class="danger" disabled>Revert to original value</button>
-        </div>
-        <div class="status" id="editStatus">No edit attempted.</div>
-        <pre class="result-json hidden" id="editJson"></pre>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>6. ArcGIS Pro refresh and persistence checks</h2>
-      <div class="panel">
-        <ol class="step-list">
-          <li>After a successful update, inspect the verified server value above.</li>
-          <li>Close the popup and reopen the same feature.</li>
-          <li>Refresh or toggle the ArcGIS Pro layer if the map still shows the old value.</li>
-          <li>Save and restart ArcGIS Pro, then confirm the edited value remains.</li>
-          <li>Use the revert control to restore the original value and verify again.</li>
-        </ol>
-        <div class="actions">
-          <button id="notifyParent" class="secondary">Send refresh-request postMessage</button>
-        </div>
-        <div class="status" id="refreshStatus">ArcGIS Pro is not expected to act on postMessage unless a custom listener exists.</div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>7. Lab result summary</h2>
-      <div class="panel">
-        <div class="grid" id="resultSummary"></div>
-      </div>
-    </section>
+  <main class="app-shell">
+    <div class="build">ARCGIS POPUP LIVE BRIDGE — PROTOTYPE 1.1</div>
+    <h1>Popup-to-app-to-popup live bridge</h1>
+    <p class="subtitle">Supports direct FeatureServer edits and bridge-table persistence for read-only or multipatch layers.</p>
+    <div class="landing-grid">
+      <a class="landing-card" href="source-popup.html"><strong>Layer A source popup</strong><span>Edit a real attribute or store a feature-specific bridge value, then publish it to the scroller channel.</span></a>
+      <a class="landing-card" href="scroller.html"><strong>External sine scroller</strong><span>Poll the live channel and send a value to either an editable Layer B feature or a read-only Layer B bridge state.</span></a>
+      <a class="landing-card" href="target-popup.html"><strong>Layer B target popup</strong><span>Watch a FeatureServer field or the shared bridge state and update the open popup live.</span></a>
+    </div>
+    <section class="section"><h2>Multipatch path</h2><div class="panel"><pre class="code-block">Multipatch popup iframe
+    │ selected feature bridge_key
+    │ update/add feature-state row
+    ▼
+Editable ArcGIS hosted bridge table
+    │ query every 0.5–2 seconds
+    ├──────────────► External sine scroller
+    │
+    └──────────────► Another open multipatch popup</pre></div></section>
+    <section class="section"><h2>Before use</h2><div class="panel"><ol>
+      <li>Run <code>Popup_Live_Bridge_Schema_Tool.pyt</code> on Layer A, Layer B, and the bridge table.</li>
+      <li>Publish the bridge table as an editable hosted table with Query, Create, and Update.</li>
+      <li>Edit <code>config.js</code> and publish this directory through GitHub Pages.</li>
+      <li>Configure each Arcade expression as <code>direct</code> or <code>bridge</code>.</li>
+      <li>Register <code>urn:ietf:wg:oauth:2.0:oob</code> on the OAuth application.</li>
+    </ol><p class="small-note">See README.md, MULTIPATCH_GUIDE.md, and SETUP_CHECKLIST.md.</p></div></section>
   </main>
-
-  <script src="config.js"></script>
-  <script src="app.js"></script>
 </body>
 </html>

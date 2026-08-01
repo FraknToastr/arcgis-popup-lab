@@ -1,93 +1,216 @@
-# ArcGIS Pro Popup Lab 7 v1.2
+# ArcGIS Popup Live Bridge Prototype v1.1
 
-Lab 7 tests authenticated query and controlled editing from a GitHub Pages application embedded in an ArcGIS Pro popup.
+Version 1.1 adds **bridge-table persistence** for multipatch and other read-only ArcGIS Pro layers while retaining the direct editable-feature workflow from v1.0.
 
-## Why v1.2 changed the sign-in flow
+## What the system now supports
 
-ArcGIS Online's authorization page refuses to render inside the popup iframe. ArcGIS Pro's popup web context also does not provide a usable child OAuth window. The earlier popup and in-frame redirect paths are therefore removed.
+### Direct mode
 
-Version 1.2 uses ArcGIS's supported out-of-band redirect with authorization code + PKCE:
+The hosted app updates and verifies a real attribute through an editable `FeatureServer/<layer id>` endpoint.
 
-1. the embedded app creates a PKCE verifier and authorization URL;
-2. the user opens ArcGIS sign-in in the normal browser;
-3. ArcGIS redirects to its `/oauth2/approval` page;
-4. the user copies the full approval-page URL from the browser address bar;
-5. the user pastes it into the embedded app;
-6. the embedded app extracts the short-lived code and exchanges it with the original PKCE verifier.
+### Bridge mode
 
-No client secret, password or access token is placed in GitHub, Arcade or a URL.
+The original feature remains unchanged. A stable feature key identifies a row in the editable hosted bridge table. The hosted popup reads and writes that row, so the value displayed in a multipatch popup can persist and can be changed from the external scroller app.
 
-## Package files
-
-- `index.html` — hosted Lab 7 application
-- `styles.css` — application styling
-- `app.js` — external-browser PKCE, query, edit, verification and rollback logic
-- `config.js` — direct-browser fallback configuration
-- `.nojekyll` — prevents Jekyll processing
-- `popup_lab_7.arcade` — ArcGIS Pro popup expression
-- `popup_lab_7_smoke_test.arcade` — minimal validation expression
-- `LAB_7_RESULTS.md` — result-recording template
-- `PATCH_NOTES_v1.2.md` — change summary
-
-## 1. OAuth application configuration
-
-In the ArcGIS OAuth application's redirect URI list, add this exact value:
-
-`urn:ietf:wg:oauth:2.0:oob`
-
-Keep the GitHub callback URI only if another application still uses it; Lab 7 v1.2 does not need it.
-
-## 2. Publish the hosted app
-
-Upload the hosted files to the GitHub Pages repository root, replacing the previous Lab 7 files:
-
-- `index.html`
-- `styles.css`
-- `app.js`
-- `config.js`
-- `.nojekyll`
-
-Delete or ignore the older `oauth-callback.html` and `callback.js`; they are not used by v1.2.
-
-## 3. Configure the Arcade expression
-
-Paste `popup_lab_7.arcade` into an Arcade popup element and configure:
-
-```arcade
-var APP_URL = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
-var CLIENT_ID = "YOUR_CLIENT_ID";
-var PORTAL_URL = "https://www.arcgis.com";
-var SERVICE_URL = "https://YOUR-FEATURE-SERVICE/FeatureServer/0";
+```text
+Read-only or multipatch feature
+    │ bridge_key / GlobalID
+    ▼
+Hosted bridge-table feature-state row
+    │
+    ├── hosted popup reads and writes the value
+    ├── external scroller app reads and writes the value
+    └── value survives popup closure and ArcGIS Pro restart
 ```
 
-The expression detects the actual Object ID field using `Schema($feature).objectIdField`.
+GitHub Pages hosts only the interfaces. ArcGIS hosted services provide authentication, persistence, and shared communication.
 
-## 4. Run external sign-in
+## Package contents
 
-1. Open a feature popup in ArcGIS Pro.
-2. Click **1. Prepare external sign-in**.
-3. Click **2. Open ArcGIS sign-in in browser**.
-4. Sign in and approve the application.
-5. On the ArcGIS approval page, press **Ctrl+L**, then **Ctrl+C** to copy the full URL from the address bar.
-6. Return to ArcGIS Pro and paste the URL into **Authorization result**.
-7. Click **3. Complete sign-in from pasted code**.
+- `source-popup.html` / `source-popup.js` — Layer A publisher with direct and bridge modes
+- `scroller.html` / `scroller.js` — external demoscene sine scroller and Layer B editor
+- `target-popup.html` / `target-popup.js` — Layer B receiver with direct and bridge modes
+- `auth.js` — OAuth 2.0 authorization code with PKCE, using the proven out-of-band flow
+- `arcgis-rest.js` — ArcGIS metadata, query, add, update, channel, and feature-state helpers
+- `config.js` — public configuration; no client secrets
+- `arcade/layer_a_source_popup.arcade` — source popup expression
+- `arcade/layer_b_target_popup.arcade` — target popup expression
+- `Popup_Live_Bridge_Schema_Tool.pyt` — schema tool, also supplied under `tools/`
+- `live_message_seed.csv` — seed channel row
+- `live_message_schema.json` — full bridge-table schema
+- `MULTIPATCH_GUIDE.md` — read-only and multipatch setup
+- `SETUP_CHECKLIST.md` and `TEST_PROTOCOL.md`
 
-You may paste the raw authorization code instead of the full URL.
+## Data architecture
 
-The prepared transaction expires after 15 minutes. Authorization codes are single-use.
+The shared hosted table stores two record types.
 
-## 5. Continue the Lab 7 tests
+### Channel record
 
-1. Load secured layer metadata.
-2. Query the selected feature.
-3. Confirm the service advertises `Update` before attempting an edit.
-4. Use a disposable or non-critical record.
-5. Apply one attribute update, verify by re-query, then restore the original value.
+Used by the Layer A publisher and the full-screen sine scroller.
 
-## Known boundaries
+```text
+record_type = channel
+channel_id  = DEMO_01
+state_id    = channel:DEMO_01
+message     = current scroller message
+```
 
-- ArcGIS authorization cannot run inside the popup iframe.
-- OAuth popup windows are not dependable from this ArcGIS Pro popup context.
-- The out-of-band flow requires one manual copy/paste step.
-- The target service must advertise `Update` for edit and rollback tests.
-- ArcGIS Pro may require a layer refresh or visibility toggle after an external edit.
+### Feature-state record
+
+Used when Layer A or Layer B is configured in bridge mode.
+
+```text
+record_type      = feature_state
+state_id         = BUILDINGS_3D|1B9A...F0
+layer_key        = BUILDINGS_3D
+feature_key      = 1B9A...F0
+feature_key_field= bridge_key
+display_field    = popup_message
+message          = current persistent popup value
+```
+
+`state_id` is logically unique and is constructed from `layer_key + "|" + feature_key`.
+
+## 1. Prepare the schemas
+
+Add `Popup_Live_Bridge_Schema_Tool.pyt` to ArcGIS Pro and run **Prepare Popup Live Bridge Schema**.
+
+For each input layer choose:
+
+- **Direct attribute** — adds only the direct text field;
+- **Bridge table** — adds and populates only `bridge_key`;
+- **Both** — prepares both paths.
+
+For a multipatch layer select **Bridge table** or **Both**. Run the tool against the source geodatabase feature class before publishing when the online scene layer does not permit schema changes.
+
+The tool:
+
+- adds `scroller_message` or your selected Layer A direct field when requested;
+- adds `popup_message` or your selected Layer B direct field when requested;
+- adds `bridge_key` as `TEXT(64)` when bridge mode is requested;
+- fills blank bridge keys from GlobalID where available, otherwise with UUID values;
+- checks that bridge keys are unique;
+- adds the complete shared-table schema;
+- adds optional indexes on `bridge_key`, `channel_id`, and `state_id`;
+- creates or completes the `DEMO_01` seed channel.
+
+It never deletes existing data or workspaces.
+
+## 2. Publish the shared bridge table
+
+Publish the prepared table as an ArcGIS hosted table and enable:
+
+- Query
+- Create
+- Update
+
+The table is the only dataset that must be editable when both operational layers use bridge mode.
+
+Do not create duplicate `channel_id` or `state_id` values.
+
+## 3. Configure OAuth
+
+Use the OAuth client ID proven in Popup Lab 7 and register this exact redirect URI:
+
+```text
+urn:ietf:wg:oauth:2.0:oob
+```
+
+No client secret is used or stored.
+
+## 4. Configure `config.js`
+
+Set the portal, client ID, bridge table URL, and direct-browser defaults.
+
+```javascript
+window.POPUP_BRIDGE_CONFIG = {
+  portalUrl: "https://www.arcgis.com",
+  clientId: "YOUR_CLIENT_ID",
+  liveTableUrl: "https://.../FeatureServer/0",
+  channelId: "DEMO_01",
+  source: {
+    mode: "bridge",
+    layerKey: "BUILDINGS_3D",
+    featureKeyField: "bridge_key",
+    messageField: "scroller_message"
+  },
+  target: {
+    mode: "bridge",
+    layerKey: "OTHER_BUILDINGS_3D",
+    featureKeyField: "bridge_key",
+    displayField: "popup_message"
+  }
+};
+```
+
+The Arcade expressions override selected-feature values through query parameters.
+
+## 5. Publish through GitHub Pages
+
+Upload all web files to the repository root, retain `.nojekyll`, and enable GitHub Pages over HTTPS.
+
+The v1.1 HTML files include versioned script and stylesheet URLs to reduce stale-cache confusion.
+
+## 6. Configure the Layer A popup
+
+Run `arcade/smoke_test.arcade`, then use `arcade/layer_a_source_popup.arcade`.
+
+### Editable feature layer
+
+```arcade
+var SOURCE_MODE = "direct";
+var SOURCE_SERVICE_URL = "https://.../FeatureServer/0";
+var SOURCE_MESSAGE_FIELD = "scroller_message";
+```
+
+### Multipatch or read-only layer
+
+```arcade
+var SOURCE_MODE = "bridge";
+var SOURCE_LAYER_KEY = "BUILDINGS_3D";
+var SOURCE_KEY_FIELD = "bridge_key";
+var SOURCE_MESSAGE_FIELD = "scroller_message";
+```
+
+In bridge mode the service URL is not used for the edit. The selected feature key is passed directly from Arcade to the hosted app.
+
+## 7. Configure the Layer B popup
+
+Use `arcade/layer_b_target_popup.arcade`.
+
+### Editable feature layer
+
+```arcade
+var TARGET_MODE = "direct";
+var TARGET_SERVICE_URL = "https://.../FeatureServer/0";
+var TARGET_DISPLAY_FIELD = "popup_message";
+```
+
+### Multipatch or read-only layer
+
+```arcade
+var TARGET_MODE = "bridge";
+var TARGET_LAYER_KEY = "OTHER_BUILDINGS_3D";
+var TARGET_KEY_FIELD = "bridge_key";
+var TARGET_DISPLAY_FIELD = "popup_message";
+```
+
+The open target popup polls the feature-state row and animates when its `message` changes.
+
+## 8. External scroller workflow
+
+Open `scroller.html` in a normal browser.
+
+The Layer B editor now offers:
+
+- **Direct FeatureServer attribute** — query an editable feature, select a field, update, and verify;
+- **Bridge-table popup state** — enter the target layer key and feature key, then add or update the persistent state row.
+
+For a multipatch target, use the same `TARGET_LAYER_KEY` and selected feature `bridge_key` used by its Arcade popup expression.
+
+## Important limitation
+
+Bridge mode changes the **persistent value displayed by the hosted popup**, not the original attribute stored inside the multipatch feature class or scene layer. The multipatch geometry and its source attributes remain unchanged.
+
+If the actual source attribute must change, use an editable associated FeatureServer where available, republish from an updated source dataset, or introduce an ArcGIS Pro SDK/local workflow.

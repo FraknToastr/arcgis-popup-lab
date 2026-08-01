@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Popup Live Bridge — Source Publisher</title>
+  <link rel="stylesheet" href="styles.css?v=1.1.0">
+</head>
+<body>
+  <main class="app-shell">
+    <div class="build">POPUP LIVE BRIDGE — SOURCE 1.1</div>
+    <h1>Source popup publisher</h1>
+    <p class="subtitle">Direct mode edits an editable feature service. Bridge mode stores a persistent popup value for read-only layers, including multipatch layers.</p>
+
+    <section class="section">
+      <h2>1. Popup context</h2>
+      <div class="panel"><dl class="kv" id="environment"></dl></div>
+    </section>
+
+    <section class="section">
+      <h2>2. ArcGIS authentication</h2>
+      <div class="panel"><div id="authHost"></div></div>
+    </section>
+
+    <section class="section">
+      <h2>3. Source and live channel</h2>
+      <div class="panel">
+        <label>Persistence mode
+          <select id="sourceMode">
+            <option value="direct">Direct FeatureServer attribute</option>
+            <option value="bridge">Bridge-table popup state</option>
+          </select>
+        </label>
+
+        <div id="directSourceFields" class="field-grid two" style="margin-top:10px;">
+          <label>Source feature layer URL<input id="sourceService" type="url" spellcheck="false"></label>
+          <label>Source message field<input id="sourceField" type="text" spellcheck="false"></label>
+          <label>Object ID<input id="sourceOid" type="number" step="1"></label>
+          <label>Object ID field<input id="sourceOidField" type="text" spellcheck="false" placeholder="Auto-detect from metadata"></label>
+        </div>
+
+        <div id="bridgeSourceFields" class="field-grid two" style="margin-top:10px;">
+          <label>Logical layer key<input id="sourceLayerKey" type="text" spellcheck="false" placeholder="Example: BUILDINGS_3D"></label>
+          <label>Selected feature key<input id="sourceKey" type="text" spellcheck="false"></label>
+          <label>Feature key field<input id="sourceKeyField" type="text" spellcheck="false" placeholder="bridge_key or GlobalID"></label>
+          <label>Popup display field name<input id="bridgeDisplayField" type="text" spellcheck="false" placeholder="scroller_message"></label>
+        </div>
+
+        <div class="field-grid two" style="margin-top:10px;">
+          <label>Live bridge table URL<input id="liveTable" type="url" spellcheck="false"></label>
+          <label>Scroller channel ID<input id="channelId" type="text" spellcheck="false"></label>
+        </div>
+        <div class="actions"><button id="inspectButton" type="button" class="secondary">Inspect and load current values</button></div>
+        <div id="inspectStatus" class="status">Not inspected.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. Publish a live scroller message</h2>
+      <div class="panel">
+        <label>Message
+          <textarea id="message" rows="4" maxlength="2000" placeholder="Enter the persistent popup value and sine-scroller message."></textarea>
+        </label>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px;">
+          <label>Speed (px/s)<input id="speed" type="number" min="20" max="600" step="5" value="145"></label>
+          <label>Amplitude (px)<input id="amplitude" type="number" min="0" max="250" step="1" value="72"></label>
+          <label>Frequency<input id="frequency" type="number" min="0.001" max="0.08" step="0.001" value="0.018"></label>
+          <label>Palette
+            <select id="palette">
+              <option value="neon">Neon spectrum</option><option value="cyan">Electric cyan</option>
+              <option value="phosphor">Phosphor green</option><option value="sunset">Sunset plasma</option>
+              <option value="magenta">Magenta pulse</option><option value="rainbow">Rainbow cycle</option>
+            </select>
+          </label>
+        </div>
+        <div class="checkbox-row">
+          <input id="updateSource" type="checkbox" checked>
+          <label id="updateSourceLabel" for="updateSource">Update the configured attribute on the selected Layer A feature.</label>
+        </div>
+        <div class="checkbox-row">
+          <input id="publishChannel" type="checkbox" checked>
+          <label for="publishChannel">Publish the message and visual settings to the live scroller channel.</label>
+        </div>
+        <div class="checkbox-row">
+          <input id="confirmPublish" type="checkbox">
+          <label for="confirmPublish">I confirm that this is an intended persistent change and live-channel publication.</label>
+        </div>
+        <div class="actions"><button id="publishButton" type="button" class="good" disabled>Save, publish and verify</button></div>
+        <div id="publishStatus" class="status">No changes made.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. Verified state</h2>
+      <div class="panel">
+        <div class="field-grid two">
+          <div class="preview-card"><div id="sourceCurrentLabel" class="label">Layer A current value</div><div id="sourceCurrent" class="preview-value">Not loaded</div></div>
+          <div class="preview-card"><div class="label">Live channel current value</div><div id="channelCurrent" class="preview-value">Not loaded</div></div>
+        </div>
+        <pre id="diagnostics" class="code-block" style="margin-top:12px;">No diagnostics yet.</pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js?v=1.1.0"></script>
+  <script src="common.js?v=1.1.0"></script>
+  <script src="arcgis-rest.js?v=1.1.0"></script>
+  <script src="auth.js?v=1.1.0"></script>
+  <script src="source-popup.js?v=1.1.0"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark">
+  <title>Popup Live Bridge — Demoscene Scroller</title>
+  <link rel="stylesheet" href="styles.css?v=1.1.0"><link rel="stylesheet" href="scroller.css?v=1.1.0">
+</head>
+<body>
+  <canvas id="scrollerCanvas"></canvas>
+  <div class="scroller-hud"><div class="eyebrow">ARCGIS POPUP LIVE BRIDGE</div><div id="hudChannel" class="channel">CHANNEL DEMO_01</div><div id="hudStatus" class="live-status">Waiting for the live table…</div></div>
+  <button id="controlToggle" class="control-toggle" type="button" title="Toggle controls">☰</button>
+
+  <aside id="controlPanel" class="control-panel">
+    <div class="build">EXTERNAL SCROLLER — BUILD 1.1</div>
+    <h2>Live demoscene receiver</h2>
+    <p class="small-note">Polls the hosted bridge table, renders the sine scroller, and can write either a real editable attribute or a bridge-state value for a read-only/multipatch feature.</p>
+
+    <section class="section"><h3>ArcGIS authentication</h3><div id="authHost"></div></section>
+
+    <section class="section"><h3>Live channel</h3><div class="panel">
+      <label>Live bridge table URL<input id="liveTable" type="url" spellcheck="false"></label>
+      <div class="field-grid two"><label>Channel ID<input id="channelId" type="text" spellcheck="false"></label><label>Poll interval (ms)<input id="pollMs" type="number" min="500" max="60000" step="100"></label></div>
+      <div class="actions"><button id="pollToggle" type="button" class="good">Start live polling</button><button id="pollNow" type="button" class="secondary">Poll now</button></div>
+      <div class="live-pill" style="margin-top:10px;"><span id="liveDot" class="live-dot"></span><span id="liveText">Stopped</span></div>
+      <div id="currentMessage" class="message-preview">No live message loaded.</div><div id="pollStatus" class="status">Polling is stopped.</div>
+    </div></section>
+
+    <section class="section"><h3>Local visual override</h3><div class="panel">
+      <label>Scroller message<textarea id="manualMessage" rows="3"></textarea></label>
+      <div class="field-grid two">
+        <label>Speed<input id="manualSpeed" type="number" min="20" max="600" step="5"></label><label>Amplitude<input id="manualAmplitude" type="number" min="0" max="250" step="1"></label>
+        <label>Frequency<input id="manualFrequency" type="number" min="0.001" max="0.08" step="0.001"></label>
+        <label>Palette<select id="manualPalette"><option value="neon">Neon spectrum</option><option value="cyan">Electric cyan</option><option value="phosphor">Phosphor green</option><option value="sunset">Sunset plasma</option><option value="magenta">Magenta pulse</option><option value="rainbow">Rainbow cycle</option></select></label>
+      </div>
+      <div class="actions"><button id="applyVisual" type="button" class="secondary">Apply local preview</button></div>
+    </div></section>
+
+    <section class="section"><h3>Send a value to Layer B</h3><div class="panel">
+      <label>Persistence mode<select id="targetMode"><option value="direct">Direct FeatureServer attribute</option><option value="bridge">Bridge-table popup state</option></select></label>
+
+      <div id="directTargetControls" style="margin-top:10px;">
+        <label>Target feature layer URL<input id="targetService" type="url" spellcheck="false"></label>
+        <div class="field-grid two"><label>Target Object ID<input id="targetOid" type="number" step="1"></label><label>Object ID field<input id="targetOidField" type="text" spellcheck="false" placeholder="Auto-detect"></label></div>
+        <label>Editable target field<select id="targetField" disabled><option>Load the target feature first</option></select></label>
+      </div>
+
+      <div id="bridgeTargetControls" style="margin-top:10px;">
+        <label>Bridge table URL<input id="targetBridgeTable" type="url" spellcheck="false"></label>
+        <div class="field-grid two">
+          <label>Logical layer key<input id="targetLayerKey" type="text" spellcheck="false"></label>
+          <label>Feature key<input id="targetFeatureKey" type="text" spellcheck="false"></label>
+          <label>Feature key field<input id="targetFeatureKeyField" type="text" spellcheck="false"></label>
+          <label>Popup display field name<input id="targetBridgeDisplayField" type="text" spellcheck="false"></label>
+        </div>
+      </div>
+
+      <div class="actions"><button id="loadTarget" type="button" class="secondary">Load target</button></div>
+      <label>New value<textarea id="targetValue" rows="3" disabled></textarea></label>
+      <div class="checkbox-row"><input id="confirmTarget" type="checkbox"><label id="confirmTargetLabel" for="confirmTarget">I confirm that this is an intended Layer B persistent change.</label></div>
+      <div class="actions"><button id="applyTarget" type="button" class="warn" disabled>Apply update and verify</button></div>
+      <div id="targetStatus" class="status">Target has not been loaded.</div><pre id="targetDiagnostics" class="code-block">No target diagnostics.</pre>
+    </div></section>
+  </aside>
+
+  <script src="config.js?v=1.1.0"></script><script src="common.js?v=1.1.0"></script><script src="arcgis-rest.js?v=1.1.0"></script><script src="auth.js?v=1.1.0"></script><script src="scroller.js?v=1.1.0"></script>
+</body>
+</html>

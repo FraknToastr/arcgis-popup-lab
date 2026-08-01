@@ -1,0 +1,91 @@
+// ArcGIS Popup Live Bridge Prototype v1.1
+// Layer B live target popup — ArcGIS Pro 3.5.3
+// Use TARGET_MODE = "bridge" for read-only layers, including multipatch layers.
+
+var APP_ROOT = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
+var CLIENT_ID = "YOUR_CLIENT_ID";
+var PORTAL_URL = "https://www.arcgis.com";
+var LIVE_TABLE_URL = "https://YOUR-LIVE-BRIDGE-TABLE/FeatureServer/0";
+var POLL_INTERVAL_MS = 1000;
+
+var TARGET_MODE = "direct"; // direct | bridge
+var TARGET_SERVICE_URL = "https://YOUR-TARGET-LAYER/FeatureServer/0";
+var TARGET_DISPLAY_FIELD = "popup_message";
+var TARGET_LAYER_KEY = "LAYER_B";
+var TARGET_KEY_FIELD = "bridge_key";
+
+var featureSchema = Schema($feature);
+var oidField = featureSchema.objectIdField;
+var oidValue = null;
+
+if (!IsEmpty(oidField) && HasValue($feature, oidField)) {
+    oidValue = $feature[oidField];
+} else if (HasValue($feature, "OBJECTID")) {
+    oidField = "OBJECTID";
+    oidValue = $feature["OBJECTID"];
+} else if (HasValue($feature, "FID")) {
+    oidField = "FID";
+    oidValue = $feature["FID"];
+}
+
+var keyField = TARGET_KEY_FIELD;
+var keyValue = "";
+
+if (!IsEmpty(keyField) && HasValue($feature, keyField)) {
+    keyValue = Text($feature[keyField]);
+} else if (HasValue($feature, "GlobalID")) {
+    keyField = "GlobalID";
+    keyValue = Text($feature["GlobalID"]);
+} else if (HasValue($feature, "GLOBALID")) {
+    keyField = "GLOBALID";
+    keyValue = Text($feature["GLOBALID"]);
+} else if (!IsEmpty(oidValue)) {
+    keyField = oidField;
+    keyValue = Text(oidValue);
+}
+
+var html = "";
+var modeLower = Lower(TARGET_MODE);
+
+if (modeLower == "direct" && IsEmpty(oidValue)) {
+    html += "<div style='padding:14px;background:#7f1d1d;color:white;border:2px solid #f87171;border-radius:10px;font-family:Arial,sans-serif;'>";
+    html += "<strong>POPUP LIVE BRIDGE — OBJECT ID NOT FOUND</strong><br><br>Direct mode requires the selected feature's Object ID.";
+    html += "</div>";
+    return { type: "text", text: html };
+}
+
+if (modeLower == "bridge" && IsEmpty(keyValue)) {
+    html += "<div style='padding:14px;background:#7f1d1d;color:white;border:2px solid #f87171;border-radius:10px;font-family:Arial,sans-serif;'>";
+    html += "<strong>POPUP LIVE BRIDGE — FEATURE KEY NOT FOUND</strong><br><br>Bridge mode requires bridge_key, GlobalID, or a usable Object ID.";
+    html += "</div>";
+    return { type: "text", text: html };
+}
+
+var queryParameters = {
+    targetOid: IIf(IsEmpty(oidValue), "", Text(oidValue)),
+    targetOidField: Text(oidField),
+    clientId: CLIENT_ID,
+    portal: PORTAL_URL,
+    targetService: TARGET_SERVICE_URL,
+    targetField: TARGET_DISPLAY_FIELD,
+    liveTable: LIVE_TABLE_URL,
+    targetMode: modeLower,
+    targetLayerKey: TARGET_LAYER_KEY,
+    targetKey: keyValue,
+    targetKeyField: keyField,
+    pollMs: Text(POLL_INTERVAL_MS),
+    source: "ArcGIS-Pro-Layer-B",
+    build: "110"
+};
+
+var appSource = APP_ROOT + "target-popup.html?" + UrlEncode(queryParameters);
+
+html += "<div style='width:100%;padding:10px;background:#07111f;color:#ffffff;border-radius:12px;font-family:Arial,sans-serif;'>";
+html += "<div style='padding:8px 10px;margin-bottom:8px;background:#6d28d9;border-radius:7px;font-weight:bold;letter-spacing:1px;'>POPUP LIVE BRIDGE — LAYER B RECEIVER</div>";
+html += "<div style='padding:7px 9px;margin-bottom:8px;background:#17263a;border-radius:6px;font-size:11px;'>";
+html += "Mode: <strong>" + Upper(modeLower) + "</strong> · Key: <strong>" + keyField + " = " + keyValue + "</strong>";
+html += "</div>";
+html += "<iframe src='" + appSource + "' style='display:block;box-sizing:border-box;width:100%;height:1040px;background:#07111f;border:3px solid #a78bfa;border-radius:10px;'>Hosted Layer B target receiver</iframe>";
+html += "</div>";
+
+return { type: "text", text: html };

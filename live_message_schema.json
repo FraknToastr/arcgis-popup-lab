@@ -1,0 +1,26 @@
+{
+  "tablePurpose": "Shared persistent state for live scroller channels and feature-specific popup values, including read-only multipatch layers.",
+  "recommendedFields": [
+    { "name": "record_type", "type": "esriFieldTypeString", "length": 20, "nullable": true, "editable": true },
+    { "name": "state_id", "type": "esriFieldTypeString", "length": 512, "nullable": true, "editable": true },
+    { "name": "channel_id", "type": "esriFieldTypeString", "length": 80, "nullable": true, "editable": true },
+    { "name": "layer_key", "type": "esriFieldTypeString", "length": 128, "nullable": true, "editable": true },
+    { "name": "feature_key", "type": "esriFieldTypeString", "length": 255, "nullable": true, "editable": true },
+    { "name": "feature_key_field", "type": "esriFieldTypeString", "length": 64, "nullable": true, "editable": true },
+    { "name": "display_field", "type": "esriFieldTypeString", "length": 64, "nullable": true, "editable": true },
+    { "name": "message", "type": "esriFieldTypeString", "length": 2000, "nullable": true, "editable": true },
+    { "name": "message_version", "type": "esriFieldTypeInteger", "nullable": true, "editable": true },
+    { "name": "scroller_speed", "type": "esriFieldTypeDouble", "nullable": true, "editable": true },
+    { "name": "sine_amplitude", "type": "esriFieldTypeDouble", "nullable": true, "editable": true },
+    { "name": "sine_frequency", "type": "esriFieldTypeDouble", "nullable": true, "editable": true },
+    { "name": "palette", "type": "esriFieldTypeString", "length": 40, "nullable": true, "editable": true },
+    { "name": "updated_at", "type": "esriFieldTypeDate", "nullable": true, "editable": true },
+    { "name": "updated_by", "type": "esriFieldTypeString", "length": 128, "nullable": true, "editable": true }
+  ],
+  "requiredCapabilities": ["Query", "Create", "Update"],
+  "logicalConstraints": [
+    "channel_id is unique among channel records.",
+    "state_id is unique among all bridge-state records.",
+    "Feature state_id is constructed as layer_key + '|' + feature_key."
+  ]
+}
