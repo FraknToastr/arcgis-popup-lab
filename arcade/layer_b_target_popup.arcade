@@ -2,14 +2,14 @@
 // Layer B live target popup — ArcGIS Pro 3.5.3
 // Use TARGET_MODE = "bridge" for read-only layers, including multipatch layers.
 
-var APP_ROOT = "https://YOUR-GITHUB-USER.github.io/YOUR-REPOSITORY/";
-var CLIENT_ID = "YOUR_CLIENT_ID";
+var APP_ROOT = "https://frakntoastr.github.io/arcgis-popup-lab/";
+var CLIENT_ID = "2i8ErWnjyQES93El";
 var PORTAL_URL = "https://www.arcgis.com";
-var LIVE_TABLE_URL = "https://YOUR-LIVE-BRIDGE-TABLE/FeatureServer/0";
+var LIVE_TABLE_URL = "https://services.arcgis.com/BzylpWnjWP0tW4nL/arcgis/rest/services/Popup_Live_Bridge/FeatureServer/0";
 var POLL_INTERVAL_MS = 1000;
 
-var TARGET_MODE = "direct"; // direct | bridge
-var TARGET_SERVICE_URL = "https://YOUR-TARGET-LAYER/FeatureServer/0";
+var TARGET_MODE = "bridge"; // direct | bridge
+var TARGET_SERVICE_URL = "";
 var TARGET_DISPLAY_FIELD = "popup_message";
 var TARGET_LAYER_KEY = "LAYER_B";
 var TARGET_KEY_FIELD = "bridge_key";
