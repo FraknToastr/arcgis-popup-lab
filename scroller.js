@@ -4,7 +4,32 @@
   const config = BridgeCommon.resolveConfig();
   const startupParams = new URLSearchParams(window.location.search);
   const DEFAULT_TARGET_FEATURE_KEY = "F7423684-4AE6-4408-8D05-6F58AD7183C2";
-  const DEFAULT_FONT_SIZE = 86;
+  const DEFAULT_FONT_SIZE = 120;
+  const FONT_SIZE_MIN = 28;
+  const FONT_SIZE_MAX = 220;
+  const FONT_SIZE_STORAGE_KEY = "popup-live-bridge-scroller-font-size";
+
+  function clampFontSize(value, fallback = DEFAULT_FONT_SIZE) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return fallback;
+    return Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, Math.round(numeric)));
+  }
+
+  function storedFontSize() {
+    try {
+      return window.localStorage.getItem(FONT_SIZE_STORAGE_KEY);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function saveFontSize(value) {
+    try {
+      window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, String(value));
+    } catch (_) {
+      // Storage can be unavailable in restricted embedded contexts.
+    }
+  }
 
   const liveFields = {
     channelId: "channel_id",
@@ -61,8 +86,8 @@
     frequency: 0.018,
     palette: "neon",
     fontSize: (() => {
-      const requested = Number(startupParams.get("fontSize") || config.scrollerFontSize);
-      return Number.isFinite(requested) ? Math.max(28, Math.min(220, requested)) : DEFAULT_FONT_SIZE;
+      const requested = startupParams.get("fontSize") ?? storedFontSize() ?? config.scrollerFontSize;
+      return clampFontSize(requested);
     })(),
     stars: [],
     lastVersion: null,
@@ -269,7 +294,7 @@
   function textMetrics(availableWidth = render.width) {
     // Font size is explicit rather than derived from the stage width. This keeps
     // the chosen scale stable when the sidebar opens or closes.
-    const size = Math.max(28, Math.min(220, Number(render.fontSize) || DEFAULT_FONT_SIZE));
+    const size = clampFontSize(render.fontSize);
     const font = `950 ${size}px "Segoe UI Black", "Arial Black", "Segoe UI", Arial, sans-serif`;
     textCtx.font = font;
     const text = `${render.message}     `;
@@ -423,17 +448,20 @@
     render.amplitude = Math.max(0, Number(values.amplitude) || 0);
     render.frequency = Math.max(.001, Number(values.frequency) || render.frequency);
     render.palette = values.palette || render.palette;
-    if (values.fontSize !== undefined && values.fontSize !== null && values.fontSize !== "") {
-      const requestedFontSize = Number(values.fontSize);
-      if (Number.isFinite(requestedFontSize)) {
-        render.fontSize = Math.max(28, Math.min(220, requestedFontSize));
-      }
+    const hasFontSize = values.fontSize !== undefined && values.fontSize !== null && values.fontSize !== "";
+    if (hasFontSize) {
+      render.fontSize = clampFontSize(values.fontSize, render.fontSize);
+      saveFontSize(render.fontSize);
     }
     el("manualMessage").value = nextMessage;
     el("manualSpeed").value = render.speed;
     el("manualAmplitude").value = render.amplitude;
     el("manualFrequency").value = render.frequency;
-    el("manualFontSize").value = render.fontSize;
+    // Live channel polls do not carry a font-size field. Do not overwrite a
+    // value that the user is currently changing with the number stepper.
+    if (hasFontSize || document.activeElement !== el("manualFontSize")) {
+      el("manualFontSize").value = render.fontSize;
+    }
     el("manualPalette").value = render.palette;
     el("currentMessage").textContent = nextMessage;
     el("hudStatus").textContent = `${source.toUpperCase()} • version ${values.version ?? "local"} • ${values.updatedBy || "unknown user"} • ${BridgeCommon.formatDate(values.updatedAt)}`;
@@ -509,7 +537,27 @@
     }
   }
 
+  function updateFontSizeFromControl(commit = false) {
+    const input = el("manualFontSize");
+    const raw = input.value;
+
+    // Allow the field to be temporarily empty while the user types. The
+    // previous rendered size remains active until a valid value is entered.
+    if (raw === "") return;
+
+    const numeric = Number(raw);
+    if (!Number.isFinite(numeric)) return;
+
+    render.fontSize = clampFontSize(numeric, render.fontSize);
+    saveFontSize(render.fontSize);
+
+    // Number-input arrow clicks emit input events, so the canvas updates on
+    // every step. Normalise the displayed value only after the edit commits.
+    if (commit || render.fontSize !== numeric) input.value = render.fontSize;
+  }
+
   function applyLocal() {
+    updateFontSizeFromControl(true);
     applyMessage({
       message: el("manualMessage").value,
       version: "local",
@@ -727,6 +775,12 @@
   });
   el("pollToggle").addEventListener("click", togglePolling);
   el("pollNow").addEventListener("click", pollOnce);
+  el("manualFontSize").addEventListener("input", () => updateFontSizeFromControl(false));
+  el("manualFontSize").addEventListener("change", () => updateFontSizeFromControl(true));
+  el("manualFontSize").addEventListener("blur", () => {
+    updateFontSizeFromControl(true);
+    el("manualFontSize").value = render.fontSize;
+  });
   el("applyVisual").addEventListener("click", applyLocal);
   el("loadTarget").addEventListener("click", loadTarget);
   el("targetMode").addEventListener("change", applyTargetModeUi);
