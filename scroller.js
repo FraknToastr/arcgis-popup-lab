@@ -31,6 +31,19 @@
 
   const canvas = el("scrollerCanvas");
   const ctx = canvas.getContext("2d", { alpha: false });
+
+  // Offscreen stages keep the text mask crisp while the plasma texture is
+  // rendered at a lower resolution for smooth animation.
+  const textCanvas = document.createElement("canvas");
+  const textCtx = textCanvas.getContext("2d");
+  const maskCanvas = document.createElement("canvas");
+  const maskCtx = maskCanvas.getContext("2d");
+  const colourCanvas = document.createElement("canvas");
+  const colourCtx = colourCanvas.getContext("2d");
+  const plasmaCanvas = document.createElement("canvas");
+  const plasmaCtx = plasmaCanvas.getContext("2d", { alpha: false });
+  let plasmaImage = null;
+  let lastPlasmaTick = -1;
   const render = {
     width: 0,
     height: 0,
@@ -62,6 +75,20 @@
     canvas.width = Math.round(render.width * render.dpr);
     canvas.height = Math.round(render.height * render.dpr);
     ctx.setTransform(render.dpr, 0, 0, render.dpr, 0, 0);
+
+    const stageWidth = Math.max(1, Math.ceil(render.width));
+    const stageHeight = Math.max(1, Math.ceil(render.height));
+    for (const offscreen of [textCanvas, maskCanvas, colourCanvas]) {
+      offscreen.width = stageWidth;
+      offscreen.height = stageHeight;
+    }
+
+    // The plasma is intentionally generated at reduced resolution, then
+    // enlarged through the text mask. This gives it a classic demoscene look
+    // without performing full-screen per-pixel work every frame.
+    plasmaCanvas.width = Math.max(160, Math.min(280, Math.round(stageWidth / 5)));
+    plasmaCanvas.height = Math.max(96, Math.min(160, Math.round(stageHeight / 5)));
+    plasmaImage = plasmaCtx.createImageData(plasmaCanvas.width, plasmaCanvas.height);
     createStars();
   }
 
@@ -75,17 +102,107 @@
     }));
   }
 
-  function paletteColor(index, x, time, alpha = 1) {
-    const palette = render.palette;
-    if (palette === "cyan") return `rgba(${40 + (index % 3) * 20},${200 + (index % 2) * 35},255,${alpha})`;
-    if (palette === "phosphor") return `rgba(${80 + (index % 3) * 25},255,${90 + (index % 2) * 35},${alpha})`;
-    if (palette === "sunset") {
-      const hue = 8 + ((index * 11 + x * .04 + time * 18) % 55);
-      return `hsla(${hue},100%,62%,${alpha})`;
+  function hslToRgb(h, s, l) {
+    h = ((h % 360) + 360) % 360;
+    s /= 100;
+    l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const hp = h / 60;
+    const x = c * (1 - Math.abs((hp % 2) - 1));
+    let r = 0, g = 0, b = 0;
+    if (hp < 1) [r, g, b] = [c, x, 0];
+    else if (hp < 2) [r, g, b] = [x, c, 0];
+    else if (hp < 3) [r, g, b] = [0, c, x];
+    else if (hp < 4) [r, g, b] = [0, x, c];
+    else if (hp < 5) [r, g, b] = [x, 0, c];
+    else [r, g, b] = [c, 0, x];
+    const m = l - c / 2;
+    return [
+      Math.round((r + m) * 255),
+      Math.round((g + m) * 255),
+      Math.round((b + m) * 255)
+    ];
+  }
+
+  function plasmaPalette(index, time) {
+    const t = index / 255;
+    let hue;
+    let saturation = 100;
+    let lightness = 58 + Math.sin(t * Math.PI * 4 + time * 1.4) * 10;
+
+    switch (render.palette) {
+      case "cyan":
+        hue = 178 + t * 42 + Math.sin(time) * 8;
+        lightness = 45 + t * 30;
+        break;
+      case "phosphor":
+        hue = 92 + t * 52 + Math.sin(time * .8) * 6;
+        lightness = 42 + t * 28;
+        break;
+      case "sunset":
+        hue = 352 + t * 76 + Math.sin(time * .9) * 10;
+        lightness = 48 + t * 22;
+        break;
+      case "magenta":
+        hue = 268 + t * 86 + Math.sin(time) * 12;
+        lightness = 48 + t * 24;
+        break;
+      case "rainbow":
+        hue = t * 360 + time * 48;
+        lightness = 55 + Math.sin(t * Math.PI * 6) * 10;
+        break;
+      default:
+        hue = 172 + t * 190 + time * 34;
+        lightness = 52 + Math.sin(t * Math.PI * 5 + time) * 12;
+        break;
     }
-    if (palette === "magenta") return `hsla(${290 + ((index * 8) % 55)},100%,68%,${alpha})`;
-    if (palette === "rainbow") return `hsla(${(index * 17 + x * .1 + time * 60) % 360},100%,68%,${alpha})`;
-    return `hsla(${(185 + index * 13 + time * 28) % 360},100%,68%,${alpha})`;
+    return hslToRgb(hue, saturation, Math.max(28, Math.min(78, lightness)));
+  }
+
+  function renderPlasma(time) {
+    if (!plasmaImage) return;
+    const plasmaTick = Math.floor(time * 30);
+    if (plasmaTick === lastPlasmaTick) return;
+    lastPlasmaTick = plasmaTick;
+    const width = plasmaCanvas.width;
+    const height = plasmaCanvas.height;
+    const data = plasmaImage.data;
+    const lut = new Uint8ClampedArray(256 * 3);
+    for (let i = 0; i < 256; i++) {
+      const [r, g, b] = plasmaPalette(i, time);
+      const offset = i * 3;
+      lut[offset] = r;
+      lut[offset + 1] = g;
+      lut[offset + 2] = b;
+    }
+
+    // Existing amplitude/frequency fields are retained for compatibility with
+    // the bridge table. They now control plasma turbulence and cell density.
+    const turbulence = Math.max(.15, Math.min(3.5, render.amplitude / 72));
+    const density = Math.max(.3, Math.min(5.5, .45 + render.frequency * 88));
+    const cx = width * (.5 + Math.sin(time * .31) * .18);
+    const cy = height * (.5 + Math.cos(time * .27) * .18);
+    let p = 0;
+
+    for (let y = 0; y < height; y++) {
+      const py = y * .072 * density;
+      for (let x = 0; x < width; x++) {
+        const px = x * .064 * density;
+        const radial = Math.hypot(x - cx, y - cy) * .075 * density;
+        const value =
+          Math.sin(px + time * 1.45) +
+          Math.sin(py - time * 1.18) +
+          Math.sin((px + py) * .72 + time * .76) +
+          Math.sin(radial - time * 1.9) * turbulence;
+        const normal = Math.max(0, Math.min(255, Math.round((value + 4.5) * 28.333)));
+        const colour = normal * 3;
+        data[p++] = lut[colour];
+        data[p++] = lut[colour + 1];
+        data[p++] = lut[colour + 2];
+        data[p++] = 255;
+      }
+    }
+    plasmaCtx.putImageData(plasmaImage, 0, 0);
   }
 
   function drawBackground(time) {
@@ -142,58 +259,113 @@
   }
 
   function textMetrics(availableWidth = render.width) {
-    const size = Math.max(38, Math.min(88, availableWidth / 12));
-    ctx.font = `900 ${size}px "Segoe UI", Arial, sans-serif`;
-    const spacing = size * .08;
-    const chars = [...`${render.message}     `];
-    const widths = chars.map((char) => ctx.measureText(char).width + spacing);
-    return { size, spacing, chars, widths, total: widths.reduce((a, b) => a + b, 0) };
+    const size = Math.max(42, Math.min(104, availableWidth / 9.8));
+    const font = `950 ${size}px "Segoe UI Black", "Arial Black", "Segoe UI", Arial, sans-serif`;
+    textCtx.font = font;
+    const text = `${render.message}     `;
+    return {
+      size,
+      font,
+      text,
+      total: Math.max(1, textCtx.measureText(text).width)
+    };
   }
 
-  function drawScroller(time) {
-    const rightEdge = scrollerRightEdge();
+  function drawPlasmaScroller(time) {
+    const rightEdge = Math.max(1, Math.floor(scrollerRightEdge()));
     const metrics = textMetrics(rightEdge);
-    const yBase = render.height * .47;
-    let cursor = rightEdge - (render.scroll % Math.max(metrics.total, 1));
-    const copies = Math.ceil((rightEdge + metrics.total) / Math.max(metrics.total, 1)) + 1;
-    const fadeIn = Math.min(1, (performance.now() - render.changedAt) / 350);
+    const yBase = render.height * .49;
+    const fadeIn = Math.min(1, (performance.now() - render.changedAt) / 420);
+    const scrollOffset = render.scroll % metrics.total;
 
-    // Keep the animated message in the visible stage. When the control panel is
-    // open, the scroller stops at its left edge instead of disappearing behind it.
+    textCtx.clearRect(0, 0, render.width, render.height);
+    textCtx.save();
+    textCtx.beginPath();
+    textCtx.rect(0, 0, rightEdge, render.height);
+    textCtx.clip();
+    textCtx.font = metrics.font;
+    textCtx.textAlign = "left";
+    textCtx.textBaseline = "middle";
+    textCtx.fillStyle = "#fff";
+    textCtx.strokeStyle = "#fff";
+    textCtx.lineJoin = "round";
+    textCtx.lineWidth = Math.max(2, metrics.size * .045);
+
+    let x = rightEdge - scrollOffset;
+    const copies = Math.ceil((rightEdge + metrics.total * 2) / metrics.total) + 1;
+    for (let copy = 0; copy < copies; copy++) {
+      textCtx.strokeText(metrics.text, x, yBase);
+      textCtx.fillText(metrics.text, x, yBase);
+      x += metrics.total;
+    }
+    textCtx.restore();
+
+    // Slice-warp the text mask. The message follows a straight horizontal
+    // route; only its surface ripples like hot plasma.
+    maskCtx.clearRect(0, 0, render.width, render.height);
+    const stripHeight = 3;
+    const top = Math.max(0, Math.floor(yBase - metrics.size * .78));
+    const bottom = Math.min(render.height, Math.ceil(yBase + metrics.size * .78));
+    const warp = Math.max(0, Math.min(34, render.amplitude * .18));
+    for (let y = top; y < bottom; y += stripHeight) {
+      const localY = y - yBase;
+      const shiftX =
+        Math.sin(localY * .075 + time * 2.2) * warp +
+        Math.sin(localY * .028 - time * 1.35) * warp * .55;
+      const shiftY = Math.sin(localY * .045 + time * 1.7) * warp * .12;
+      maskCtx.drawImage(
+        textCanvas,
+        0, y, rightEdge, stripHeight,
+        shiftX, y + shiftY, rightEdge, stripHeight + 1
+      );
+    }
+
+    renderPlasma(time);
+
+    colourCtx.clearRect(0, 0, render.width, render.height);
+    colourCtx.save();
+    colourCtx.drawImage(
+      plasmaCanvas,
+      0, 0, plasmaCanvas.width, plasmaCanvas.height,
+      0, 0, rightEdge, render.height
+    );
+    colourCtx.globalCompositeOperation = "destination-in";
+    colourCtx.drawImage(maskCanvas, 0, 0);
+    colourCtx.restore();
+
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, rightEdge, render.height);
     ctx.clip();
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    for (let copy = 0; copy < copies; copy++) {
-      for (let i = 0; i < metrics.chars.length; i++) {
-        const char = metrics.chars[i];
-        const width = metrics.widths[i];
-        const x = cursor;
-        if (x > -metrics.size * 2 && x < rightEdge + metrics.size * 2) {
-          const phase = x * render.frequency + time * 2.15;
-          const y = yBase + Math.sin(phase) * render.amplitude;
-          const slope = render.amplitude * render.frequency * Math.cos(phase);
-          const angle = Math.atan(slope) * .72;
-          const pulse = 1 + Math.sin(time * 3.1 + i * .35) * .045;
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(angle);
-          ctx.scale(pulse * fadeIn, pulse * fadeIn);
-          ctx.shadowBlur = 28;
-          ctx.shadowColor = paletteColor(i, x, time, .9);
-          ctx.fillStyle = paletteColor(i, x, time, 1);
-          ctx.fillText(char, 0, 0);
-          ctx.shadowBlur = 4;
-          ctx.strokeStyle = "rgba(255,255,255,.7)";
-          ctx.lineWidth = Math.max(1, metrics.size * .018);
-          ctx.strokeText(char, 0, 0);
-          ctx.restore();
-        }
-        cursor += width;
-      }
-    }
+
+    // A dim plasma aura makes the moving colour field readable before each
+    // glyph enters, while the high-resolution masked pass stays sharp.
+    ctx.globalAlpha = .16 * fadeIn;
+    ctx.filter = "blur(34px) saturate(1.45)";
+    ctx.drawImage(
+      plasmaCanvas,
+      0, 0, plasmaCanvas.width, plasmaCanvas.height,
+      0, yBase - metrics.size * 1.15, rightEdge, metrics.size * 2.3
+    );
+
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = .42 * fadeIn;
+    ctx.filter = "blur(18px) saturate(1.8)";
+    ctx.drawImage(colourCanvas, 0, 0);
+
+    ctx.globalAlpha = .78 * fadeIn;
+    ctx.filter = "blur(5px) saturate(1.45)";
+    ctx.drawImage(colourCanvas, 0, 0);
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = fadeIn;
+    ctx.filter = "none";
+    ctx.drawImage(colourCanvas, 0, 0);
+
+    // White edge-lighting gives the plasma-filled text a crisp demoscene face.
+    ctx.globalCompositeOperation = "screen";
+    ctx.globalAlpha = .28 * fadeIn;
+    ctx.drawImage(maskCanvas, 0, 0);
     ctx.restore();
   }
 
@@ -216,7 +388,7 @@
     render.time += delta;
     render.scroll += render.speed * delta;
     drawBackground(render.time);
-    drawScroller(render.time);
+    drawPlasmaScroller(render.time);
     drawScanlines();
     requestAnimationFrame(frame);
   }

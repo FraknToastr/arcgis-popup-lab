@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark">
-  <title>Popup Live Bridge — Demoscene Scroller</title>
+  <title>Popup Live Bridge — Plasma Scroller</title>
   <link rel="stylesheet" href="styles.css?v=1.3.1"><link rel="stylesheet" href="scroller.css?v=1.3.1">
 </head>
 <body>
@@ -11,9 +11,9 @@
   <button id="controlToggle" class="control-toggle" type="button" title="Toggle controls">☰</button>
 
   <aside id="controlPanel" class="control-panel">
-    <div class="build">EXTERNAL SCROLLER — BUILD 1.3.1</div>
-    <h2>Live demoscene receiver</h2>
-    <p class="small-note">Polls the hosted bridge table, renders the sine scroller, and can write either a real editable attribute or a bridge-state value for a read-only/multipatch feature.</p>
+    <div class="build">EXTERNAL PLASMA SCROLLER — BUILD 1.4.0</div>
+    <h2>Live plasma receiver</h2>
+    <p class="small-note">Polls the hosted bridge table, renders a straight plasma-filled demoscene scroller, and can write either a real editable attribute or a bridge-state value for a read-only/multipatch feature.</p>
 
     <section class="section"><h3>ArcGIS authentication</h3><div id="authHost"></div></section>
 
@@ -26,10 +26,10 @@
     </div></section>
 
     <section class="section"><h3>Local visual override</h3><div class="panel">
-      <label>Scroller message<textarea id="manualMessage" rows="3"></textarea></label>
+      <label>Plasma scroller message<textarea id="manualMessage" rows="3"></textarea></label>
       <div class="field-grid two">
-        <label>Speed<input id="manualSpeed" type="number" min="20" max="600" step="5"></label><label>Amplitude<input id="manualAmplitude" type="number" min="0" max="250" step="1"></label>
-        <label>Frequency<input id="manualFrequency" type="number" min="0.001" max="0.08" step="0.001"></label>
+        <label>Scroll speed<input id="manualSpeed" type="number" min="20" max="600" step="5"></label><label>Plasma warp<input id="manualAmplitude" type="number" min="0" max="250" step="1"></label>
+        <label>Plasma density<input id="manualFrequency" type="number" min="0.001" max="0.08" step="0.001"></label>
         <label>Palette<select id="manualPalette"><option value="neon">Neon spectrum</option><option value="cyan">Electric cyan</option><option value="phosphor">Phosphor green</option><option value="sunset">Sunset plasma</option><option value="magenta">Magenta pulse</option><option value="rainbow">Rainbow cycle</option></select></label>
       </div>
       <div class="actions"><button id="applyVisual" type="button" class="secondary">Apply local preview</button></div>
@@ -62,6 +62,6 @@
     </div></section>
   </aside>
 
-  <script src="config.js?v=1.3.1"></script><script src="common.js?v=1.3.1"></script><script src="arcgis-rest.js?v=1.3.1"></script><script src="auth.js?v=1.3.1"></script><script src="scroller.js?v=1.3.1"></script>
+  <script src="config.js?v=1.3.1"></script><script src="common.js?v=1.3.1"></script><script src="arcgis-rest.js?v=1.3.1"></script><script src="auth.js?v=1.3.1"></script><script src="scroller.js?v=1.4.0"></script>
 </body>
 </html>
