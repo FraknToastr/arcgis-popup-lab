@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 640 340" role="img" aria-labelledby="title desc">
+  <title id="title">LarkGIS singing logo</title>
+  <desc id="desc">The LarkGIS logo with animated musical notes floating away from its mouth.</desc>
+
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="52%" r="54%">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.28"/>
+      <stop offset="0.52" stop-color="#8b5cf6" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3.3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="640" height="340" rx="24" fill="#020617"/>
+  <ellipse cx="318" cy="184" rx="230" ry="142" fill="url(#halo)">
+    <animate attributeName="rx" values="220;240;220" dur="3.8s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="136;151;136" dur="3.8s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <image x="60" y="68" width="440" height="210" preserveAspectRatio="xMidYMid meet"
+         href="https://larkgis.web.app/assets/LarkGIS_header_logo.svg"
+         xlink:href="https://larkgis.web.app/assets/LarkGIS_header_logo.svg"/>
+
+  <!-- Sound pulses leave the mouth at approximately x=438, y=171. -->
+  <g fill="none" stroke="#67e8f9" stroke-width="4" stroke-linecap="round" opacity="0">
+    <path d="M438 158 Q460 171 438 184"/>
+    <animate attributeName="opacity" values="0;0.8;0" keyTimes="0;0.45;1" dur="1.15s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;18 -4" dur="1.15s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- Cyan eighth note. -->
+  <g opacity="0" filter="url(#glow)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.72;1" dur="3.8s" begin="0s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;54 -38;108 -88;158 -137" keyTimes="0;0.32;0.68;1" dur="3.8s" begin="0s" repeatCount="indefinite"/>
+    <g transform="translate(438 171)">
+      <animateTransform attributeName="transform" additive="sum" type="rotate" values="-8 0 0;10 0 0;-7 0 0;12 0 0" dur="3.8s" begin="0s" repeatCount="indefinite"/>
+      <ellipse cx="0" cy="12" rx="13" ry="9" transform="rotate(-18 0 12)" fill="#67e8f9"/>
+      <rect x="8" y="-46" width="7" height="59" rx="3.5" fill="#67e8f9"/>
+      <path d="M14 -45 C42 -42 42 -18 19 -9 C29 -25 23 -33 14 -32 Z" fill="#67e8f9"/>
+    </g>
+  </g>
+
+  <!-- Violet paired notes. -->
+  <g opacity="0" filter="url(#glow)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.74;1" dur="4.15s" begin="1.15s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;45 -27;94 -75;143 -122" keyTimes="0;0.31;0.68;1" dur="4.15s" begin="1.15s" repeatCount="indefinite"/>
+    <g transform="translate(440 175)">
+      <animateTransform attributeName="transform" additive="sum" type="rotate" values="9 0 0;-10 0 0;8 0 0;-5 0 0" dur="4.15s" begin="1.15s" repeatCount="indefinite"/>
+      <ellipse cx="0" cy="12" rx="11" ry="8" transform="rotate(-14 0 12)" fill="#c4b5fd"/>
+      <ellipse cx="38" cy="3" rx="11" ry="8" transform="rotate(-14 38 3)" fill="#c4b5fd"/>
+      <rect x="8" y="-45" width="6" height="58" rx="3" fill="#a78bfa"/>
+      <rect x="46" y="-54" width="6" height="58" rx="3" fill="#a78bfa"/>
+      <path d="M11 -45 L49 -54 L49 -39 L11 -30 Z" fill="#a78bfa"/>
+    </g>
+  </g>
+
+  <!-- Pink trailing note. -->
+  <g opacity="0" filter="url(#glow)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.70;1" dur="3.45s" begin="2.35s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;62 -24;116 -67;171 -109" keyTimes="0;0.34;0.70;1" dur="3.45s" begin="2.35s" repeatCount="indefinite"/>
+    <g transform="translate(434 179)">
+      <animateTransform attributeName="transform" additive="sum" type="rotate" values="-12 0 0;12 0 0;-8 0 0;9 0 0" dur="3.45s" begin="2.35s" repeatCount="indefinite"/>
+      <ellipse cx="0" cy="10" rx="10" ry="7" transform="rotate(-18 0 10)" fill="#f9a8d4"/>
+      <rect x="7" y="-38" width="6" height="49" rx="3" fill="#f472b6"/>
+      <path d="M12 -38 C34 -35 34 -17 16 -9 C24 -22 19 -29 12 -28 Z" fill="#f472b6"/>
+    </g>
+  </g>
+
+  <g fill="#ffffff" opacity="0">
+    <circle cx="505" cy="94" r="3"/>
+    <circle cx="552" cy="60" r="2.5"/>
+    <circle cx="588" cy="104" r="2"/>
+    <animate attributeName="opacity" values="0;0.9;0;0.65;0" dur="2.8s" repeatCount="indefinite"/>
+  </g>
+</svg>
