@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="150" viewBox="0 0 720 150" role="img" aria-label="Pseudo animation frame 0">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#050a18"/><stop offset="1" stop-color="#111b37"/></linearGradient>
+    <linearGradient id="beam" x1="0" x2="1"><stop stop-color="#00f2fe"/><stop offset="0.5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f72585"/></linearGradient>
+  </defs>
+  <rect width="720" height="150" rx="16" fill="url(#bg)"/>
+  <rect x="2" y="2" width="716" height="146" rx="14" fill="none" stroke="#a78bfa" stroke-opacity="0.58" stroke-width="3"/>
+  <path d="M35 105H685" stroke="#263552" stroke-width="8" stroke-linecap="round"/>
+  <path d="M35 105H50" stroke="url(#beam)" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="50" cy="105" r="18" fill="#00f2fe" fill-opacity="0.14" stroke="#00f2fe" stroke-width="3"/>
+  <text x="35" y="48" fill="#7dd3fc" font-family="Arial" font-size="14" font-weight="800">ARCADE EVALUATION FRAME</text>
+  <text x="35" y="80" fill="white" font-family="Arial Black, Arial" font-size="29" font-weight="900">FRAME 0</text>
+  <text x="680" y="80" text-anchor="end" fill="#64748b" font-family="Consolas" font-size="15">Second(Now()) % 6</text>
+</svg>
