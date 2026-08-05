@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 240" role="img" aria-labelledby="title desc">
   <title id="title">Animated musical notes</title>
-  <desc id="desc">Vector musical notes drift upward and away from the left edge.</desc>
+  <desc id="desc">Vector musical notes drift upward above the LarkGIS bird.</desc>
 
   <defs>
     <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
@@ -26,13 +26,6 @@
       <stop offset="1" stop-color="#db2777"/>
     </radialGradient>
   </defs>
-
-  <!-- Small sound pulses leave the mouth before each note. -->
-  <g fill="none" stroke="#67e8f9" stroke-width="4" stroke-linecap="round" opacity="0">
-    <path d="M8 161 Q31 172 8 183"/>
-    <animate attributeName="opacity" values="0;0.8;0" keyTimes="0;0.45;1" dur="1.15s" repeatCount="indefinite"/>
-    <animateTransform attributeName="transform" type="translate" values="0 0;18 -4" dur="1.15s" repeatCount="indefinite"/>
-  </g>
 
   <!-- Cyan eighth note. -->
   <g opacity="0" filter="url(#glow)">
