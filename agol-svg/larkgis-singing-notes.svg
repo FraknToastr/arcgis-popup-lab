@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 240" role="img" aria-labelledby="title desc">
+  <title id="title">Animated musical notes</title>
+  <desc id="desc">Vector musical notes drift upward and away from the left edge.</desc>
+
+  <defs>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="cyanNote" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.3" stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </radialGradient>
+    <radialGradient id="violetNote" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.32" stop-color="#c4b5fd"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </radialGradient>
+    <radialGradient id="pinkNote" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.32" stop-color="#f9a8d4"/>
+      <stop offset="1" stop-color="#db2777"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Small sound pulses leave the mouth before each note. -->
+  <g fill="none" stroke="#67e8f9" stroke-width="4" stroke-linecap="round" opacity="0">
+    <path d="M8 161 Q31 172 8 183"/>
+    <animate attributeName="opacity" values="0;0.8;0" keyTimes="0;0.45;1" dur="1.15s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;18 -4" dur="1.15s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- Cyan eighth note. -->
+  <g opacity="0" filter="url(#glow)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.72;1" dur="3.8s" begin="0s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;62 -38;142 -98;226 -154" keyTimes="0;0.32;0.68;1" dur="3.8s" begin="0s" repeatCount="indefinite"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="-8 25 178;10 25 178;-7 25 178;12 25 178" dur="3.8s" begin="0s" repeatCount="indefinite"/>
+      <ellipse cx="24" cy="183" rx="17" ry="12" transform="rotate(-18 24 183)" fill="url(#cyanNote)"/>
+      <rect x="35" y="105" width="8" height="80" rx="4" fill="#67e8f9"/>
+      <path d="M42 106 C77 110 76 138 48 151 C62 129 52 122 42 121 Z" fill="#67e8f9"/>
+    </g>
+  </g>
+
+  <!-- Violet paired notes. -->
+  <g opacity="0" filter="url(#glow)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.74;1" dur="4.15s" begin="1.15s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;52 -28;128 -88;206 -142" keyTimes="0;0.31;0.68;1" dur="4.15s" begin="1.15s" repeatCount="indefinite"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="9 28 185;-10 28 185;8 28 185;-5 28 185" dur="4.15s" begin="1.15s" repeatCount="indefinite"/>
+      <ellipse cx="18" cy="190" rx="14" ry="10" transform="rotate(-14 18 190)" fill="url(#violetNote)"/>
+      <ellipse cx="66" cy="178" rx="14" ry="10" transform="rotate(-14 66 178)" fill="url(#violetNote)"/>
+      <rect x="28" y="116" width="7" height="75" rx="3.5" fill="#a78bfa"/>
+      <rect x="76" y="104" width="7" height="75" rx="3.5" fill="#a78bfa"/>
+      <path d="M32 115 L80 103 L80 122 L32 134 Z" fill="#a78bfa"/>
+    </g>
+  </g>
+
+  <!-- Pink trailing note. -->
+  <g opacity="0" filter="url(#glow)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.7;1" dur="3.45s" begin="2.35s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;70 -25;148 -78;238 -126" keyTimes="0;0.34;0.7;1" dur="3.45s" begin="2.35s" repeatCount="indefinite"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="-12 20 190;12 20 190;-8 20 190;9 20 190" dur="3.45s" begin="2.35s" repeatCount="indefinite"/>
+      <ellipse cx="19" cy="191" rx="13" ry="9" transform="rotate(-18 19 191)" fill="url(#pinkNote)"/>
+      <rect x="28" y="131" width="7" height="61" rx="3.5" fill="#f472b6"/>
+      <path d="M34 132 C62 136 61 157 39 167 C49 151 43 145 34 145 Z" fill="#f472b6"/>
+    </g>
+  </g>
+
+  <!-- Sparse sparkling accents. -->
+  <g fill="#ffffff" opacity="0">
+    <circle cx="101" cy="91" r="3"/>
+    <circle cx="175" cy="58" r="2.5"/>
+    <circle cx="238" cy="92" r="2"/>
+    <animate attributeName="opacity" values="0;0.9;0;0.65;0" dur="2.8s" repeatCount="indefinite"/>
+  </g>
+</svg>
